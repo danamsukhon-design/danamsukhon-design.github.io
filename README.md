@@ -115,6 +115,17 @@ shrunk with FFmpeg, e.g.
 `ffmpeg -i big.mov -vf scale=-2:720 -c:v libx264 -crf 25 -c:a aac -b:a 128k -movflags +faststart small.mp4`.
 The `drive:` ids are kept only as a reference to the originals; they are used only if `file` is empty.
 
+### Arabic / English
+The button at the top (globe, "العربية" / "English") switches the whole site between English and Arabic.
+Arabic turns the page right-to-left and uses Arabic fonts. The choice is remembered, and this link always
+opens the Arabic version: **https://danamsukhon-design.github.io/?lang=ar**
+
+- Content translations are in **`js/i18n-data.js`**. Each line pairs the *exact* English text from `data.js`
+  with its Arabic. If you change or add English text in `data.js`, add the same text with its Arabic here too,
+  otherwise it shows in English on the Arabic site.
+- Interface words (buttons, labels, hints) and the nouns used with numbers ("صفحة / صفحتان / صفحات") are in
+  **`js/i18n.js`** (`UI` and `UNITS`).
+
 ---
 
 ## 4. What is in the site
