@@ -117,8 +117,8 @@ The `drive:` ids are kept only as a reference to the originals; they are used on
 
 ### Arabic / English
 The button at the top (globe, "العربية" / "English") switches the whole site between English and Arabic.
-Arabic turns the page right-to-left and uses Arabic fonts. The choice is remembered, and this link always
-opens the Arabic version: **https://danamsukhon-design.github.io/?lang=ar**
+Arabic turns the page right-to-left and uses Arabic fonts. **English is the main language**: the plain
+address always opens in English, and this link opens the Arabic version: **https://danamsukhon-design.github.io/?lang=ar**
 
 - Content translations are in **`js/i18n-data.js`**. Each line pairs the *exact* English text from `data.js`
   with its Arabic. If you change or add English text in `data.js`, add the same text with its Arabic here too,
