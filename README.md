@@ -34,13 +34,14 @@ then open <http://localhost:8080/>. Press `Ctrl+C` in that window to stop it.
 - Repository: https://github.com/danamsukhon-design/danamsukhon-design.github.io
 
 ### Publish a change
-After editing anything in this folder, run these three commands in PowerShell, from the `website` folder:
+After editing anything in this folder, run this in PowerShell from the `website` folder:
 
 ```powershell
-git add -A
-git commit -m "Describe the change"
-git push
+powershell -ExecutionPolicy Bypass -File tools\publish.ps1 "Describe the change"
 ```
+
+It stamps `index.html` with a new version number (so visitors' browsers load the newest files
+instead of an old saved copy), then commits and pushes to GitHub.
 
 GitHub rebuilds the site by itself; the change is live within a minute or two.
 (Git and GitHub CLI are installed on this computer, and the account is already signed in.)
