@@ -143,6 +143,14 @@ window.IMG_DIMS = {
   "video-thumbnails/in-the-classroom.jpg": [720, 1264],
   "video-thumbnails/its-an-elephant.jpg": [638, 360],
   "video-thumbnails/reading-time.jpg": [638, 360],
+  "video-thumbnails/scene-01.jpg": [1280, 720],
+  "video-thumbnails/scene-02.jpg": [1280, 720],
+  "video-thumbnails/scene-03.jpg": [1280, 720],
+  "video-thumbnails/scene-04.jpg": [1280, 720],
+  "video-thumbnails/scene-05.jpg": [1280, 720],
+  "video-thumbnails/scene-06.jpg": [1280, 720],
+  "video-thumbnails/scene-07.jpg": [1280, 720],
+  "video-thumbnails/scene-08.jpg": [1280, 720],
   "video-thumbnails/thawi-al-himam.jpg": [1600, 900],
   "video-thumbnails/untitled-video.jpg": [720, 1264]
 };

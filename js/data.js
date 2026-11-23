@@ -314,8 +314,8 @@ window.SITE = {
     {
       id: "video", title: "Video", unit: "videos", icon: "film", acc: "#702C3A", dark: true,
       kicker: "Animation, trailers & reports",
-      short: "Animated English lessons, a book trailer and a report.",
-      lead: "Animated English lessons, a book trailer and a report, edited and produced end to end.",
+      short: "Animated English lessons, a book trailer, a report, and unedited animated scenes.",
+      lead: "Animated English lessons, a book trailer and a report, edited and produced end to end, plus single animated scenes before editing.",
       cover: "video-thumbnails/book-trailer.jpg",
       sets: [
         { title: "Animation, Trailers & Reports", layout: "cinema",
@@ -329,6 +329,20 @@ window.SITE = {
             { drive: "11q9VKx7a_4extvlSIJafhTWNmF_VXFOX", file: "assets/videos/cinematic-short.mp4", title: "Cinematic Short",   kind: "Video",        thumb: "video-thumbnails/cinematic-short.jpg",      r: 1.778, temp: true },
             { drive: "1HcuIpnaLDrwT0uoptRT4Zo2XroJxpLQg", file: "assets/videos/untitled-video.mp4", title: "Untitled Video",    kind: "Video",        thumb: "video-thumbnails/untitled-video.jpg",       r: 0.570, temp: true },
             { drive: "1w5uJnXMyH7MERNMOiqN3hxShBELqAjbn", file: "assets/videos/in-the-classroom.mp4", title: "In the Classroom",  kind: "Video",        thumb: "video-thumbnails/in-the-classroom.jpg",     r: 0.570, temp: true },
+          ] },
+        /* single scenes, kept as they came out (no editing); they play silently on hover and
+           with sound on the big screen when clicked */
+        { title: "Scenes, Unedited", layout: "scenes",
+          desc: "Short animated scenes with the characters from Character Style, kept exactly as they came out, before any editing.",
+          items: [
+            { file: "assets/videos/scene-01.mp4", title: "Laptop Chat",        kind: "Scene", thumb: "video-thumbnails/scene-01.jpg", r: 1.778, dur: 15 },
+            { file: "assets/videos/scene-02.mp4", title: "School Corridor",    kind: "Scene", thumb: "video-thumbnails/scene-02.jpg", r: 1.778, dur: 15 },
+            { file: "assets/videos/scene-03.mp4", title: "At the Market",      kind: "Scene", thumb: "video-thumbnails/scene-03.jpg", r: 1.778, dur: 15 },
+            { file: "assets/videos/scene-04.mp4", title: "Dreaming of a House", kind: "Scene", thumb: "video-thumbnails/scene-04.jpg", r: 1.778, dur: 15 },
+            { file: "assets/videos/scene-05.mp4", title: "In the Park",        kind: "Scene", thumb: "video-thumbnails/scene-05.jpg", r: 1.778, dur: 15 },
+            { file: "assets/videos/scene-06.mp4", title: "School Hallway",     kind: "Scene", thumb: "video-thumbnails/scene-06.jpg", r: 1.778, dur: 15 },
+            { file: "assets/videos/scene-07.mp4", title: "Making a Sandwich",  kind: "Scene", thumb: "video-thumbnails/scene-07.jpg", r: 1.778, dur: 15 },
+            { file: "assets/videos/scene-08.mp4", title: "On the Playground",  kind: "Scene", thumb: "video-thumbnails/scene-08.jpg", r: 1.778, dur: 8 },
           ] },
       ],
     },

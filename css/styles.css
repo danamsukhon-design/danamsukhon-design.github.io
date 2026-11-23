@@ -1112,6 +1112,25 @@ li:hover > .ic.draw path, li:hover > .ic.draw circle, li:hover > .ic.draw rect,
 .ri-kind { font: 600 .64rem/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
 .ri-meta b { font: 500 1.15rem/1.15 var(--serif); color: var(--ivory); }
 
+/* ---------- video: unedited scenes wall ---------- */
+.scenes { padding-top: 0; }
+.scene-wall { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px 18px; }
+.scene { display: flex; flex-direction: column; gap: .7rem; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; }
+.sc-frame { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #0E0A0B; box-shadow: 0 24px 40px -26px rgba(0, 0, 0, .8); transition: transform .5s var(--ease), box-shadow .4s; }
+.sc-frame img, .sc-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sc-frame video { opacity: 0; transition: opacity .3s; }
+.scene.previewing .sc-frame video { opacity: 1; }
+.sc-play { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(247, 241, 232, .92); color: var(--burgundy); display: grid; place-items: center; transform: scale(.9); transition: opacity .3s, transform .4s var(--ease); }
+.sc-play .ic { width: 16px; height: 16px; margin-left: 2px; }
+.scene.previewing .sc-play { opacity: 0; transform: scale(.7); }
+.sc-dur { position: absolute; right: 8px; bottom: 8px; padding: .18rem .45rem; border-radius: 6px; background: rgba(0, 0, 0, .55); color: #fff; font: 600 .66rem/1 var(--sans); letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+.scene:hover .sc-frame { transform: translateY(-3px); box-shadow: 0 30px 46px -26px rgba(0, 0, 0, .9); }
+.scene[aria-current="true"] .sc-frame { outline: 2px solid var(--pink); outline-offset: 3px; }
+.sc-meta { display: flex; flex-direction: column; gap: .2rem; }
+.sc-no { font: 600 .64rem/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+.sc-meta b { font: 500 1.2rem/1.15 var(--serif); color: var(--ivory); }
+.ts-anim { align-self: center; margin-left: .4rem; }
+
 /* ---------- 06 songs: record + tracklist ---------- */
 .music { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px 40px; align-items: start; }
 .deck { grid-column: 1 / span 5; position: sticky; top: calc(var(--hdr) + 20px); }
@@ -1266,6 +1285,7 @@ li:hover > .ic.draw path, li:hover > .ic.draw circle, li:hover > .ic.draw rect,
   .deck-info { margin-top: 0; }
   .tracks { grid-column: 1 / -1; }
   .squares { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .scene-wall { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
   :root { --hdr: 64px; }

@@ -279,7 +279,7 @@
     if (w.id === "books") facts.push([w.sets.length, "books"]);
     if (w.id === "social") facts.push([w.sets.length, "series"]);
     if (w.id === "ai") facts.push([w.sets.length, "collections"], [w.prompts.length, "prompts"]);
-    if (w.id === "video") { const kinds = new Set(w.sets[0].items.map((x) => x.kind)); facts.push([kinds.size, "formats"]); }
+    if (w.id === "video") { const kinds = new Set(w.sets[0].items.map((x) => x.kind)); facts.push([kinds.size, "formats"]); if (w.sets[1]) facts.push([w.sets[1].items.length, "unedited scenes"]); }
     if (w.id === "songs") facts.push([2, "languages"]);
     if (w.id === "charstyle") facts.push([5, "turnaround views"]);
     const jumps = [];
@@ -671,6 +671,7 @@
           <div class="ts-actions">
             <button class="btn btn-primary ts-spin" type="button" aria-pressed="false">${icon("play")}<span>Spin</span></button>
             <button class="btn btn-ghost ts-open" type="button">${icon("expand")}<span>Open full sheet</span></button>
+            <a class="link-u ts-anim" href="#video" data-jump-after="set-video-1">${icon("film")}<span>See them animated</span></a>
           </div>
           <div class="ts-cast-box">
             <span class="label">The cast</span>
@@ -1096,7 +1097,27 @@
            : `<img src="${DS.dims(it.thumb)[0] > 600 ? DS.thumb(it.thumb) : DS.full(it.thumb)}" alt="" loading="lazy">`)
     : `<span class="vcover"><span class="vc-ic">${icon("film")}</span><b>${t(it.title)}</b><small>No preview frame yet</small></span>`;
   BODY.video = (w) => {
-    const s = w.sets[0];
+    const s = w.sets[0], sc = w.sets[1];
+    /* second set: unedited scenes, a wall of clips (they preview silently on hover) */
+    const scenes = !sc ? "" : `
+    <section class="block wrap scenes" id="set-video-1">
+      ${setHead("Raw scenes", sc, "scenes")}
+      <div class="scene-wall">
+        ${sc.items.map((it, j) => `
+        <button class="scene" type="button" data-k="${s.items.length + j}" data-cursor="Play" aria-label="Play scene ${j + 1}, ${esc(it.title)}, on the big screen">
+          <span class="sc-frame">
+            <img src="${DS.thumb(it.thumb)}" alt="" loading="lazy" width="600" height="338">
+            <video muted loop playsinline preload="none" data-src="${esc(it.file)}" aria-hidden="true" tabindex="-1"></video>
+            <span class="sc-play" aria-hidden="true">${icon("play")}</span>
+            <span class="sc-dur">0:${pad(it.dur || 0)}</span>
+          </span>
+          <span class="sc-meta"><span class="sc-no">Scene ${pad(j + 1)}</span><b>${esc(it.title)}</b></span>
+        </button>`).join("")}
+      </div>
+    </section>`;
+    return scenes ? videoMain(w, s) + scenes : videoMain(w, s);
+  };
+  const videoMain = (w, s) => {
     return `
     <section class="block wrap" id="set-video-0">
       <div class="cinema" data-cinema>
@@ -1121,7 +1142,7 @@
     </section>`;
   };
   DS.init.video = (root) => {
-    const w = S().work.find((x) => x.id === "video"), items = w.sets[0].items;
+    const w = S().work.find((x) => x.id === "video"), items = w.sets.flatMap((s) => s.items);
     const cv = $("[data-cinema]", root); if (!cv) return;
     const scr = $(".screen", cv); let i = 0;
     const show = (k, play = false) => {
@@ -1147,12 +1168,30 @@
       sbd.hidden = !!it.file;
       if (!it.file) sbd.href = `https://drive.google.com/file/d/${it.drive}/view`;
       $$(".reel-item", cv).forEach((r) => r.setAttribute("aria-selected", +r.dataset.k === i));
+      $$(".scene", root).forEach((b) => (+b.dataset.k === i ? b.setAttribute("aria-current", "true") : b.removeAttribute("aria-current")));
     };
     $$(".reel-item", cv).forEach((r) => r.addEventListener("click", () => {
       show(+r.dataset.k, true);
       if (DS.mobile.matches) scr.scrollIntoView({ behavior: DS.reduced.matches ? "auto" : "smooth", block: "center" });
     }));
     $$("[data-cv]", cv).forEach((b) => b.addEventListener("click", () => show(i + +b.dataset.cv)));
+    /* scenes: silent preview on hover, full playback with sound on the big screen when clicked */
+    $$(".scene", root).forEach((b) => {
+      const v = $("video", b);
+      const stopPreview = () => { b.classList.remove("previewing"); v.pause(); };
+      b.addEventListener("pointerenter", (e) => {
+        if (e.pointerType !== "mouse" || DS.reduced.matches) return;
+        if (!v.src) v.src = v.dataset.src;
+        b.classList.add("previewing");
+        v.play().catch(() => {});
+      });
+      b.addEventListener("pointerleave", stopPreview);
+      b.addEventListener("click", () => {
+        stopPreview();
+        show(+b.dataset.k, true);
+        scr.scrollIntoView({ behavior: DS.reduced.matches ? "auto" : "smooth", block: "center" });
+      });
+    });
     show(0);
   };
 

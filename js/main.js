@@ -179,6 +179,8 @@
     const target = !cat && r.section && r.section !== "home" ? document.getElementById(r.section) : null;
     if (target) { target.scrollIntoView({ behavior: "instant", block: "start" }); }
     else scrollTo({ top: 0, behavior: "instant" });
+    /* a link with data-jump-after="id" lands on that part of the new page */
+    if (jumpAfter) { const el = document.getElementById(jumpAfter); jumpAfter = null; if (el) el.scrollIntoView({ behavior: "instant", block: "start" }); }
     const box = cat ? catEl : homeEl;
     DS.reveal(box); DS.parallax(document); DS.magnetic(box);
     document.dispatchEvent(new CustomEvent("ds:view", { detail: r.view }));
@@ -211,6 +213,8 @@
   }
   addEventListener("hashchange", () => route());
 
+  let jumpAfter = null;
+  document.addEventListener("click", (e) => { const a = e.target.closest("[data-jump-after]"); if (a) jumpAfter = a.dataset.jumpAfter; });
   /* in-page jumps (the chips at the top of work pages) */
   document.addEventListener("click", (e) => {
     const j = e.target.closest("[data-jump]"); if (!j) return;
