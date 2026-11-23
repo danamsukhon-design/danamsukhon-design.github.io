@@ -39,17 +39,32 @@
   DS.sound = {
     on: DS.store.get("ds-sound") !== "off",
     volume: 1,          /* overall loudness: raise or lower this one number (0.5 = half, 1.5 = louder) */
+    drive: 4,           /* loudness stage: higher = denser, louder-sounding clicks (peaks stay safe) */
     ctx: null, out: null,
     ensure() {
       if (!this.ctx) {
         const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
         const c = (this.ctx = new AC());
-        /* one master level for every sound (levels below are set so nothing goes over full scale) */
+        /* every sound -> master level -> soft saturation. The saturation lifts the quieter parts of each
+           sound (up to ~4x) while keeping the loudest point just under full scale, so clicks sound much
+           louder on small speakers without crackling. */
         this.out = c.createGain(); this.out.gain.value = this.volume;
-        this.out.connect(c.destination);
+        const sat = c.createWaveShaper(), n = 4096, curve = new Float32Array(n), k = this.drive;
+        for (let i = 0; i < n; i++) { const x = (i / (n - 1)) * 2 - 1; curve[i] = (Math.tanh(k * x) / Math.tanh(k)) * 0.96; }
+        sat.curve = curve; sat.oversample = "none";   /* "none" keeps every peak under full scale (oversampling overshoots) */
+        this.out.connect(sat).connect(c.destination);
       }
       if (this.ctx.state === "suspended") this.ctx.resume();
       return this.ctx;
+    },
+    /* a very short filtered noise burst: the crisp "tap" at the start of a click */
+    tap(dur, vol, hp = 1800) {
+      const c = this.ensure(); if (!c) return;
+      const n = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+      const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+      src.buffer = buf; f.type = "highpass"; f.frequency.value = hp; g.gain.value = vol;
+      src.connect(f).connect(g).connect(this.out); src.start(c.currentTime);
     },
     blip(freq, to, dur, vol, type = "sine", delay = 0) {
       const c = this.ensure(); if (!c) return;
@@ -62,12 +77,12 @@
       if (!this.on) return;
       try {
         /* the click: a warm body + a bright tap on top, so it is heard clearly on laptop and phone speakers */
-        if (kind === "tick") { this.blip(1100, 620, 0.11, 0.62); this.blip(2400, 1900, 0.04, 0.26, "triangle"); }
-        else if (kind === "soft") { this.blip(1700, 1200, 0.07, 0.55); }
-        else if (kind === "open") { this.blip(660, 660, 0.2, 0.5); this.blip(990, 990, 0.26, 0.4, "sine", 0.06); }
-        else if (kind === "close") this.blip(880, 480, 0.14, 0.7);
-        else if (kind === "page") this.whoosh(0.55, 300, 2400, 2.2);
-        else if (kind === "turn") this.whoosh(0.24, 900, 3200, 1.8);
+        if (kind === "tick") { this.tap(0.025, 0.9); this.blip(1400, 800, 0.14, 0.55, "triangle"); this.blip(700, 450, 0.14, 0.35); }
+        else if (kind === "soft") { this.tap(0.018, 0.6, 2500); this.blip(1800, 1200, 0.09, 0.45, "triangle"); }
+        else if (kind === "open") { this.tap(0.02, 0.6); this.blip(660, 660, 0.22, 0.45, "triangle"); this.blip(990, 990, 0.28, 0.4, "triangle", 0.07); }
+        else if (kind === "close") { this.tap(0.02, 0.6); this.blip(880, 480, 0.16, 0.55, "triangle"); }
+        else if (kind === "page") this.whoosh(0.55, 300, 2400, 2.6);
+        else if (kind === "turn") this.whoosh(0.26, 900, 3200, 2.2);
       } catch (e) {}
     },
     whoosh(dur = 0.55, f0 = 300, f1 = 2400, vol = 0.045) {
