@@ -11,18 +11,19 @@
     build() {
       const el = document.createElement("div");
       el.className = "lb is-dark"; el.hidden = true;
-      el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", "Image viewer");
+      el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", DS.T("Image viewer"));
+      el.setAttribute("dir", "ltr");   /* prev on the left, next on the right in both languages */
       el.innerHTML = `
         <div class="lb-bg" data-close></div>
         <div class="lb-top">
           <span class="lb-count" aria-live="polite"></span>
           <span class="lb-set"></span>
-          <button class="lb-btn lb-close" data-close aria-label="Close viewer (Esc)">${icon("x")}</button>
+          <button class="lb-btn lb-close" data-close aria-label="${DS.T("Close viewer (Esc)")}">${icon("x")}</button>
         </div>
         <img class="lb-img" alt="" draggable="false">
-        <button class="lb-btn lb-prev" aria-label="Previous image">${icon("arrow-left")}</button>
-        <button class="lb-btn lb-next" aria-label="Next image">${icon("arrow-right")}</button>
-        <p class="lb-cap"></p>`;
+        <button class="lb-btn lb-prev" aria-label="${DS.T("Previous image")}">${icon("arrow-left")}</button>
+        <button class="lb-btn lb-next" aria-label="${DS.T("Next image")}">${icon("arrow-right")}</button>
+        <p class="lb-cap" dir="auto"></p>`;
       document.body.appendChild(el);
       this.el = el; this.img = $(".lb-img", el);
       el.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) this.close(); });
@@ -155,8 +156,8 @@
           <div class="dv-head">
             <div><span class="dv-kind"></span><h3 class="dv-title"></h3></div>
             <div class="dv-actions">
-              <a class="dv-open" target="_blank" rel="noopener">${icon("drive")}<span>Open on Google Drive</span></a>
-              <button class="lb-btn dv-close" data-close aria-label="Close">${icon("x")}</button>
+              <a class="dv-open" target="_blank" rel="noopener">${icon("drive")}<span>${DS.T("Open on Google Drive")}</span></a>
+              <button class="lb-btn dv-close" data-close aria-label="${DS.T("Close")}">${icon("x")}</button>
             </div>
           </div>
           <div class="dv-frame"></div>
@@ -226,11 +227,11 @@
     fail() {
       const it = this.list[this.i]; if (!it || it.failed) return;
       this.playing = false;
-      if (it.file) { this.emit(); DS.toast("This song couldn’t play. Please try again."); return; }
+      if (it.file) { this.emit(); DS.toast(DS.T("This song couldn’t play. Please try again.")); return; }
       it.failed = true; this.emit();
       this.viaDrive(it);
     },
-    viaDrive(it) { DS.drive.open({ drive: it.drive, title: it.title, kind: "Song", r: 16 / 5, audio: true }, "Playing through Google Drive’s own player."); },
+    viaDrive(it) { DS.drive.open({ drive: it.drive, title: it.title, kind: "Song", r: 16 / 5, audio: true }, DS.T("Playing through Google Drive’s own player.")); },
     state() {
       const a = this.audio, it = this.list[this.i];
       return { i: this.i, item: it, playing: this.playing, t: a.currentTime || 0, d: (it && this.durations[it.drive]) || (isFinite(a.duration) ? a.duration : 0) };
@@ -260,12 +261,12 @@
   DS.mini = {
     init() {
       const el = document.createElement("div");
-      el.className = "mini"; el.hidden = true; el.setAttribute("aria-label", "Now playing");
+      el.className = "mini"; el.hidden = true; el.setAttribute("aria-label", DS.T("Now playing"));
       el.innerHTML = `
-        <a class="mini-cover" href="#songs" aria-label="Go to Songs"></a>
-        <div class="mini-meta"><span class="mini-k">Now playing</span><b class="mini-t"></b></div>
-        <button class="mini-btn mini-play" aria-label="Play">${icon("play")}</button>
-        <button class="mini-btn mini-x" aria-label="Stop and close">${icon("x")}</button>
+        <a class="mini-cover" href="#songs" aria-label="${DS.T("Go to Songs")}"></a>
+        <div class="mini-meta"><span class="mini-k">${DS.T("Now playing")}</span><b class="mini-t"></b></div>
+        <button class="mini-btn mini-play" aria-label="${DS.T("Play")}">${icon("play")}</button>
+        <button class="mini-btn mini-x" aria-label="${DS.T("Stop and close")}">${icon("x")}</button>
         <span class="mini-bar"><i></i></span>`;
       document.body.appendChild(el);
       $(".mini-play", el).addEventListener("click", () => PL.toggle());
@@ -277,7 +278,7 @@
         $(".mini-cover", el).style.cssText = DS.songVars(s.i);
         $(".mini-cover", el).innerHTML = `<span>${pad(s.i + 1)}</span>`;
         $(".mini-play", el).innerHTML = icon(s.playing ? "pause" : "play");
-        $(".mini-play", el).setAttribute("aria-label", s.playing ? "Pause" : "Play");
+        $(".mini-play", el).setAttribute("aria-label", DS.T(s.playing ? "Pause" : "Play"));
         $(".mini-bar i", el).style.transform = `scaleX(${s.d ? s.t / s.d : 0})`;
         el.classList.toggle("playing", s.playing);
       });

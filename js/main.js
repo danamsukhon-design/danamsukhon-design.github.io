@@ -8,10 +8,11 @@
      #books #social #characters #ai #video #songs              -> work pages          */
 (function () {
   const { $, $$, esc, icon, pad } = DS;
+  const T = DS.T, AR = DS.lang === "ar";
   const SITE = window.SITE, root = document.documentElement;
   const CATS = SITE.work.map((w) => w.id);
   const SECTIONS = ["home", "work", "about", "skills", "experience", "honors", "contact"];
-  const NAV = [["home", "Home"], ["work", "Work"], ["about", "About"], ["skills", "Skills"], ["experience", "Experience"], ["contact", "Contact"]];
+  const NAV = [["home", "Home"], ["work", "Work"], ["about", "About"], ["skills", "Skills"], ["experience", "Experience"], ["contact", "Contact"]].map(([id, l]) => [id, T(l)]);
   const SPY = { home: "home", about: "about", skills: "skills", experience: "experience", honors: "experience", work: "work", contact: "contact" };
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
@@ -21,31 +22,34 @@
     <div class="hdr-in">
       <a class="brand" href="#home" aria-label="${esc(SITE.person.name)}, home">
         <span class="brand-mark">DS</span>
-        <span class="brand-name">Dana <em>Sukhon</em></span>
+        <span class="brand-name">${(() => { const p = SITE.person.name.split(" "); return esc(p[0]) + " <em>" + esc(p.slice(1).join(" ")) + "</em>"; })()}</span>
       </a>
-      <nav class="hdr-nav" aria-label="Main">
+      <nav class="hdr-nav" aria-label="${T("Main")}">
         ${NAV.map(([id, label]) => id !== "work" ? `<a href="#${id}" data-nav="${id}">${label}</a>` : `
         <div class="nav-drop">
           <a href="#work" data-nav="work" aria-haspopup="true">${label}<svg class="ic chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a>
           <div class="drop">
-            <span class="label">Open a discipline</span>
-            ${SITE.work.map((w, k) => `<a href="#${w.id}" style="--c:${w.acc}" data-cat="${w.id}"><span class="dr-no">${pad(k + 1)}</span><span class="dr-t">${esc(w.title)}</span><span class="dr-n">${DS.count(w)} ${esc(w.unit)}</span></a>`).join("")}
+            <span class="label">${T("Open a discipline")}</span>
+            ${SITE.work.map((w, k) => `<a href="#${w.id}" style="--c:${w.acc}" data-cat="${w.id}"><span class="dr-no">${pad(k + 1)}</span><span class="dr-t">${esc(w.title)}</span><span class="dr-n">${DS.units(DS.count(w), w.unit)}</span></a>`).join("")}
           </div>
         </div>`).join("")}
       </nav>
       <div class="hdr-tools">
         <span class="where" aria-hidden="true"><i class="dot"></i><span class="where-t"></span></span>
+        <button class="hbtn lang-btn" type="button" data-sfx="none" lang="${AR ? "en" : "ar"}" aria-label="${AR ? "Switch to English" : "التبديل إلى العربية"}">
+          ${icon("globe")}<span class="lang-t">${AR ? "English" : "العربية"}</span><span class="lang-s" aria-hidden="true">${AR ? "EN" : "ع"}</span>
+        </button>
         <button class="hbtn sound-btn" type="button" aria-pressed="false" data-sfx="none">
-          <span class="snd-ic">${icon("sound-off")}</span><span class="hbtn-t">Sound</span>
+          <span class="snd-ic">${icon("sound-off")}</span><span class="hbtn-t">${T("Sound")}</span>
         </button>
         <button class="hbtn menu-btn" type="button" aria-expanded="false" aria-controls="menu" data-sfx="none">
-          <span class="hbtn-t">Menu</span><span class="burger" aria-hidden="true"><i></i><i></i></span>
+          <span class="hbtn-t">${T("Menu")}</span><span class="burger" aria-hidden="true"><i></i><i></i></span>
         </button>
       </div>
     </div>
-    <nav class="cat-switch" aria-label="All disciplines">
+    <nav class="cat-switch" aria-label="${T("All disciplines")}">
       <div class="cs-in">
-        <a class="cs-all" href="#work">${icon("grid")}<span>All work</span></a>
+        <a class="cs-all" href="#work">${icon("grid")}<span>${T("All work")}</span></a>
         ${SITE.work.map((w, k) => `<a href="#${w.id}" data-cat="${w.id}" style="--c:${w.acc}"><span class="cs-no">${pad(k + 1)}</span>${esc(w.title)}<b>${DS.count(w)}</b></a>`).join("")}
       </div>
     </nav>`;
@@ -54,12 +58,25 @@
   const sndBtn = $(".sound-btn", hdr);
   const paintSound = () => {
     sndBtn.setAttribute("aria-pressed", DS.sound.on);
-    sndBtn.setAttribute("aria-label", DS.sound.on ? "Sound effects on. Turn off" : "Sound effects off. Turn on");
+    sndBtn.setAttribute("aria-label", T(DS.sound.on ? "Sound effects on. Turn off" : "Sound effects off. Turn on"));
     $(".snd-ic", sndBtn).innerHTML = icon(DS.sound.on ? "sound-on" : "sound-off");
-    $(".hbtn-t", sndBtn).textContent = DS.sound.on ? "Sound on" : "Sound off";
+    $(".hbtn-t", sndBtn).textContent = T(DS.sound.on ? "Sound on" : "Sound off");
     sndBtn.classList.toggle("on", DS.sound.on);
   };
   sndBtn.addEventListener("click", () => DS.sound.toggle());
+
+  /* language switch: English <-> Arabic (a curtain, then the page reloads in the other language) */
+  const switchLang = () => {
+    const to = AR ? "en" : "ar";
+    DS.sound.play("page");
+    const c = $(".curtain");
+    if (c && !DS.reduced.matches) {
+      $(".cu-title", c).innerHTML = to === "ar" ? "<em>العربية</em>" : "<em>English</em>";
+      c.classList.remove("out"); c.classList.add("in");
+      setTimeout(() => DS.setLang(to), 560);
+    } else DS.setLang(to);
+  };
+  $(".lang-btn", hdr).addEventListener("click", switchLang);
   document.addEventListener("ds:sound", paintSound);
   paintSound();
 
@@ -78,22 +95,22 @@
   /* ---------- full-screen menu ---------- */
   const menu = document.createElement("div");
   menu.className = "menu"; menu.id = "menu"; menu.hidden = true;
-  menu.setAttribute("role", "dialog"); menu.setAttribute("aria-modal", "true"); menu.setAttribute("aria-label", "Menu");
+  menu.setAttribute("role", "dialog"); menu.setAttribute("aria-modal", "true"); menu.setAttribute("aria-label", T("Menu"));
   const C = SITE.contact;
   menu.innerHTML = `
     <div class="menu-panel is-dark">
       <div class="wrap menu-in">
         <div class="menu-top">
-          <span class="label">Menu</span>
-          <button class="hbtn menu-close" type="button" data-sfx="close"><span class="hbtn-t">Close</span>${icon("x")}</button>
+          <span class="label">${T("Menu")}</span>
+          <button class="hbtn menu-close" type="button" data-sfx="close"><span class="hbtn-t">${T("Close")}</span>${icon("x")}</button>
         </div>
         <div class="menu-grid">
           <div class="menu-work">
-            <span class="label">The work</span>
-            <ul>${SITE.work.map((w, k) => `<li style="--i:${k}"><a href="#${w.id}" style="--c:${w.acc}" data-cat="${w.id}"><i class="dot"></i><span class="mw-t">${esc(w.title)}</span><span class="mw-n">${DS.count(w)} ${esc(w.unit)}</span></a></li>`).join("")}</ul>
+            <span class="label">${T("The work")}</span>
+            <ul>${SITE.work.map((w, k) => `<li style="--i:${k}"><a href="#${w.id}" style="--c:${w.acc}" data-cat="${w.id}"><i class="dot"></i><span class="mw-t">${esc(w.title)}</span><span class="mw-n">${DS.units(DS.count(w), w.unit)}</span></a></li>`).join("")}</ul>
           </div>
-          <nav class="menu-main" aria-label="Sections">
-            <span class="label">The portfolio</span>
+          <nav class="menu-main" aria-label="${T("Sections")}">
+            <span class="label">${T("The portfolio")}</span>
             <ol>${NAV.map(([id, label], k) => `<li style="--i:${k + 6}"><a href="#${id}" data-nav="${id}"><span class="mm-no">${pad(k + 1)}</span><span class="mm-t">${label}</span></a></li>`).join("")}</ol>
           </nav>
         </div>
@@ -102,11 +119,13 @@
           ${C.showPhone && C.phone ? `<a href="tel:${esc(C.phone)}">${icon("phone-call")}<span dir="ltr">${esc(C.phoneLabel)}</span></a>` : ""}
           ${C.behance ? `<a href="${esc(C.behance)}" target="_blank" rel="noopener">Behance ${icon("arrow-up-right")}</a>` : ""}
           ${C.linkedin ? `<a href="${esc(C.linkedin)}" target="_blank" rel="noopener">LinkedIn ${icon("arrow-up-right")}</a>` : ""}
+          <button class="lang-link" type="button" lang="${AR ? "en" : "ar"}">${icon("globe")}<span>${AR ? "English" : "العربية"}</span></button>
           <span>${esc(SITE.person.location)}</span>
         </div>
       </div>
     </div>`;
   document.body.appendChild(menu);
+  $(".lang-link", menu).addEventListener("click", switchLang);
   const menuBtn = $(".menu-btn", hdr);
   let menuOpen = false;
   const openMenu = () => {
@@ -135,8 +154,8 @@
   foot.innerHTML = `
     <div class="wrap foot-in">
       <span>© ${esc(SITE.person.year)} ${esc(SITE.person.name)}</span>
-      <nav class="foot-dots" aria-label="Work">${SITE.work.map((w) => `<a href="#${w.id}" style="--c:${w.acc}" aria-label="${esc(w.title)}" data-tip="${esc(w.title)}"></a>`).join("")}</nav>
-      <span>${esc(SITE.person.title)} · ${esc(SITE.person.location.split(",")[0])}</span>
+      <nav class="foot-dots" aria-label="${T("Work")}">${SITE.work.map((w) => `<a href="#${w.id}" style="--c:${w.acc}" aria-label="${esc(w.title)}" data-tip="${esc(w.title)}"></a>`).join("")}</nav>
+      <span>${esc(SITE.person.title)} · ${esc(SITE.person.location.split(/[,،]/)[0])}</span>
     </div>`;
 
   /* ---------- views ---------- */
@@ -166,7 +185,7 @@
       where(`${pad(k + 1)} — ${w.title}`, w.acc); setNav("work");
       $$("[data-cat]").forEach((a) => (a.dataset.cat === w.id ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
       const on = $(`.cat-switch [data-cat="${w.id}"]`, hdr);
-      if (on) { const bar = $(".cs-in", hdr); bar.scrollTo({ left: on.offsetLeft - bar.clientWidth / 2 + on.clientWidth / 2, behavior: "instant" }); }
+      if (on) { const bar = $(".cs-in", hdr), br = bar.getBoundingClientRect(), orr = on.getBoundingClientRect(); bar.scrollBy({ left: orr.left - br.left - bar.clientWidth / 2 + orr.width / 2, behavior: "instant" }); }
     } else {
       catEl.innerHTML = ""; root.style.removeProperty("--page-acc");
       $$("[data-cat]").forEach((a) => a.removeAttribute("aria-current"));
@@ -208,7 +227,7 @@
     }
     if (first || DS.reduced.matches) { swap(r); return; }
     const w = SITE.work[CATS.indexOf(r.view)];
-    const title = w ? DS.ital(w.title) : r.section && r.section !== "home" ? `<em>${esc(NAV.find((n) => n[0] === SPY[r.section])[1])}</em>` : `Dana <em>Sukhon</em>`;
+    const title = w ? DS.ital(w.title) : r.section && r.section !== "home" ? `<em>${esc(NAV.find((n) => n[0] === SPY[r.section])[1])}</em>` : (() => { const p = SITE.person.name.split(" "); return esc(p[0]) + " <em>" + esc(p.slice(1).join(" ")) + "</em>"; })();
     curtain(title, w ? w.acc : null, () => swap(r));
   }
   addEventListener("hashchange", () => route());
@@ -234,8 +253,8 @@
     spySections.forEach((s) => { const r = s.getBoundingClientRect(); if (r.top <= mid && r.bottom > mid) on = s.id; });
     const navId = SPY[on] || "home";
     setNav(navId);
-    const label = on === "honors" ? "Honors & events" : NAV.find((n) => n[0] === navId)[1];
-    where(on === "home" ? "Portfolio 2026" : `${pad(SECTIONS.indexOf(on) + 1)} — ${label}`, "var(--burgundy)");
+    const label = on === "honors" ? T("Honors & events") : NAV.find((n) => n[0] === navId)[1];
+    where(on === "home" ? T("Portfolio") + " " + SITE.person.year : `${pad(SECTIONS.indexOf(on) + 1)} — ${label}`, "var(--burgundy)");
   }
   const onScroll = () => {
     const max = document.documentElement.scrollHeight - innerHeight, p = max > 0 ? scrollY / max : 0;

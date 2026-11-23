@@ -4,13 +4,14 @@
    DS.init.<id>(root)   wires up that interface after it is on the page            */
 (function () {
   const { $, $$, esc, icon, pad, t } = DS;
+  const T = DS.T, U = DS.units, UL = DS.unitLabel, AR = DS.lang === "ar";
   const S = () => window.SITE;
   const count = (w) => w.sets.reduce((a, s) => a + s.items.length, 0) + (w.prompts ? w.prompts.length : 0);
   DS.count = count;
   /* last word in italics: "Book <em>Design</em>" */
   const ital = (s) => { const p = esc(s).split(" "); return p.length > 1 ? p.slice(0, -1).join(" ") + " <em>" + p[p.length - 1] + "</em>" : "<em>" + p[0] + "</em>"; };
   DS.ital = ital;
-  const letters = (s, k0 = 0) => s.split("").map((c, k) => `<span class="lt" style="--k:${k + k0}">${esc(c)}</span>`).join("");
+  const letters = (s, k0 = 0) => (AR ? [s] : s.split("")).map((c, k) => `<span class="lt" style="--k:${k + k0}">${esc(c)}</span>`).join("");
   const head = (no, label, title, sub) => `
     <header class="sec-head">
       <span class="sec-no" data-reveal><span>${no}</span>${esc(label)}</span>
@@ -30,56 +31,57 @@
   DS.views.home = () => {
     const s = S(), P = s.person, A = s.about, K = s.skills, C = s.contact;
     const total = s.work.reduce((a, w) => a + count(w), 0);
+    const NM = P.name.split(" ");
 
     const hero = `
-    <section class="hero" id="home" aria-label="Introduction">
+    <section class="hero" id="home" aria-label="${T("Introduction")}">
       <div class="wrap">
         <div class="hero-top">
-          <span class="label">Portfolio · ${esc(P.year)}</span>
-          <span class="label hide-sm">Journalism × Graphic Design</span>
+          <span class="label">${T("Portfolio")} · ${esc(P.year)}</span>
+          <span class="label hide-sm">${T("Journalism × Graphic Design")}</span>
           <span class="label">${esc(P.location)}</span>
         </div>
         <h1 class="giant" aria-label="${esc(P.name)}">
-          <span class="g-line g1" aria-hidden="true">${letters("Dana")}</span>
-          <span class="g-line g2" aria-hidden="true"><em>${letters("Sukhon", 4)}</em><span class="g-dot lt" style="--k:10">.</span></span>
+          <span class="g-line g1" aria-hidden="true">${letters(NM[0])}</span>
+          <span class="g-line g2" aria-hidden="true"><em>${letters(NM[1] || "", AR ? 1 : 4)}</em><span class="g-dot lt" style="--k:10">.</span></span>
         </h1>
         <div class="hero-stage">
           <div class="who">
-            <p class="role">Journalist <em>&amp;</em> Graphic Designer</p>
+            <p class="role">${T("Journalist <em>&amp;</em> Graphic Designer")}</p>
             <p class="statement">“${esc(P.statement)}”</p>
             <p class="intro">${esc(P.intro)}</p>
             <div class="ctas">
-              <a class="btn btn-primary" href="#work" data-magnetic><span>Explore my work</span>${icon("arrow-right")}</a>
-              <a class="link-u" href="#about">About me</a>
+              <a class="btn btn-primary" href="#work" data-magnetic><span>${T("Explore my work")}</span>${icon("arrow-right")}</a>
+              <a class="link-u" href="#about">${T("About me")}</a>
             </div>
           </div>
           <figure class="portrait">
-            <div class="arch" data-speed="0.05">${DS.img(P.portrait, { alt: "Portrait of " + P.name, eager: true, sizes: "(max-width: 760px) 70vw, 26vw" })}</div>
+            <div class="arch" data-speed="0.05">${DS.img(P.portrait, { alt: T("Portrait of") + " " + P.name, eager: true, sizes: "(max-width: 760px) 70vw, 26vw" })}</div>
             <div class="rot-badge" aria-hidden="true">
               <svg viewBox="0 0 120 120"><defs><path id="badge-circle" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs>
-                <text><textPath href="#badge-circle">Storyteller · Designer · Journalist · </textPath></text></svg>
+                <text><textPath href="#badge-circle">${T("Storyteller · Designer · Journalist · ")}</textPath></text></svg>
               <span class="rb-core">${sparkle}</span>
             </div>
           </figure>
-          <nav class="hero-index" aria-label="The work: open a discipline">
-            <div class="hi-head"><span class="label">The work</span><span class="label">${total} pieces</span></div>
-            ${s.work.map((w, k) => `<a href="#${w.id}" style="--c:${w.acc}"><span class="hi-no">${pad(k + 1)}</span><span class="hi-t">${esc(w.title)}</span><span class="hi-n">${count(w)} ${esc(w.unit)}</span>${icon("arrow-right", "hi-go")}</a>`).join("")}
+          <nav class="hero-index" aria-label="${T("The work: open a discipline")}">
+            <div class="hi-head"><span class="label">${T("The work")}</span><span class="label">${U(total, "pieces")}</span></div>
+            ${s.work.map((w, k) => `<a href="#${w.id}" style="--c:${w.acc}"><span class="hi-no">${pad(k + 1)}</span><span class="hi-t">${esc(w.title)}</span><span class="hi-n">${U(count(w), w.unit)}</span>${icon("arrow-right", "hi-go")}</a>`).join("")}
           </nav>
         </div>
       </div>
     </section>`;
 
-    const words = ["Journalism", "Newspaper design", "Articles", "Editorial design", "Book layout", "Social media", "Posters", "Kufi lettering", "Character design", "Character style", "AI imagery", "Video", "Voice-over", "Proofreading"];
+    const words = ["Journalism", "Newspaper design", "Articles", "Editorial design", "Book layout", "Social media", "Posters", "Kufi lettering", "Character design", "Character style", "AI imagery", "Video", "Voice-over", "Proofreading"].map((x) => T(x));
     const mq = words.map((w, k) => `<span class="${k % 2 ? "it" : ""}">${w}</span>${sparkle}`).join("");
     const marquee = `<div class="marquee" aria-hidden="true"><div class="mq-track">${mq}${mq}</div></div>`;
 
     const about = `
-    <section class="sec about" id="about" aria-label="About">
+    <section class="sec about" id="about" aria-label="${T("About")}">
       <div class="wrap">
-        ${head("03", "About", "A storyteller<br>who <em>designs.</em>")}
+        ${head("03", T("About"), T("A storyteller<br>who <em>designs.</em>"))}
         <div class="bento">
           <article class="tile t-story" data-reveal>
-            <span class="label">${icon("news")} Who I am</span>
+            <span class="label">${icon("news")} ${T("Who I am")}</span>
             <p class="t-lead">${esc(A.lead)}</p>
             ${A.body.map((p) => `<p>${esc(p)}</p>`).join("")}
             <p class="sign">${esc(P.name)}</p>
@@ -87,45 +89,45 @@
           <article class="tile t-quote" data-reveal style="--d:1">
             ${icon("quote", "q-ic")}
             <blockquote>${esc(P.statement)}</blockquote>
-            <span class="label">My philosophy</span>
+            <span class="label">${T("My philosophy")}</span>
           </article>
           <article class="tile t-edu" data-reveal style="--d:2">
-            <span class="label">${icon("cap")} Education</span>
+            <span class="label">${icon("cap")} ${T("Education")}</span>
             <ul>${A.education.map((e) => `<li><b>${esc(e.degree)}</b><span>${esc(e.school)}</span></li>`).join("")}</ul>
           </article>
           <article class="tile t-loc" data-reveal>
-            <span class="label">${icon("pin")} Based in</span>
-            <p class="big">${esc(P.location.split(",")[0])},<br><em>${esc((P.location.split(",")[1] || "").trim())}</em></p>
+            <span class="label">${icon("pin")} ${T("Based in")}</span>
+            <p class="big">${esc(P.location.split(/[,،]/)[0])}${AR ? "،" : ","}<br><em>${esc((P.location.split(/[,،]/)[1] || "").trim())}</em></p>
           </article>
           <article class="tile t-look" data-reveal style="--d:1">
-            <span class="label">${icon("users")} Looking for</span>
+            <span class="label">${icon("users")} ${T("Looking for")}</span>
             <p class="t-lead">${esc(A.looking)}</p>
-            <div class="values">${["Creativity", "Integrity", "Collaboration", "Meaningful communication"].map((v) => `<span>${v}</span>`).join("")}</div>
-            <a class="link-u" href="#contact">Let’s talk ${icon("arrow-right")}</a>
+            <div class="values">${["Creativity", "Integrity", "Collaboration", "Meaningful communication"].map((v) => `<span>${T(v)}</span>`).join("")}</div>
+            <a class="link-u" href="#contact">${T("Let’s talk")} ${icon("arrow-right")}</a>
           </article>
         </div>
       </div>
     </section>`;
 
     const skills = `
-    <section class="sec skills" id="skills" aria-label="Skills and tools">
+    <section class="sec skills" id="skills" aria-label="${T("Skills and tools")}">
       <div class="wrap">
-        ${head("04", "Skills & tools", "The <em>toolkit.</em>")}
+        ${head("04", T("Skills & tools"), T("The <em>toolkit.</em>"))}
         <div class="skills-grid">
           <article class="card k-sw" data-reveal>
-            <header><span class="k-no">01</span><h3>Software</h3></header>
+            <header><span class="k-no">01</span><h3>${T("Software")}</h3></header>
             <ul class="apps">${K.software.map((a, k) => `<li class="app" style="--bg:${a.bg};--fg:${a.fg};--i:${k}"><span class="app-ic">${a.short}</span><span class="app-nm">${esc(a.name.replace("Adobe ", ""))}</span></li>`).join("")}</ul>
           </article>
           <article class="card k-ai" data-reveal style="--d:1">
-            <header><span class="k-no">02</span><h3>AI tools</h3></header>
+            <header><span class="k-no">02</span><h3>${T("AI tools")}</h3></header>
             <ul class="ai-chips">${K.ai.map((a) => `<li><span class="mono-ic">${esc(a[0])}</span>${esc(a)}</li>`).join("")}</ul>
           </article>
           <article class="card k-do" data-reveal>
-            <header><span class="k-no">03</span><h3>What I do</h3></header>
+            <header><span class="k-no">03</span><h3>${T("What I do")}</h3></header>
             <ul class="do-list">${K.services.map((x) => `<li>${icon(x.icon, "draw")}<span>${esc(x.name)}</span></li>`).join("")}</ul>
           </article>
           <article class="card k-ss" data-reveal style="--d:1">
-            <header><span class="k-no">04</span><h3>Soft skills</h3></header>
+            <header><span class="k-no">04</span><h3>${T("Soft skills")}</h3></header>
             <ul class="soft-list">${K.soft.map((x) => `<li>${icon(x.icon, "draw")}<span>${esc(x.name)}</span></li>`).join("")}</ul>
           </article>
         </div>
@@ -133,20 +135,20 @@
     </section>`;
 
     const exp = `
-    <section class="sec exp" id="experience" aria-label="Experience">
+    <section class="sec exp" id="experience" aria-label="${T("Experience")}">
       <div class="wrap">
-        ${head("05", "Experience", "Where I’ve <em>worked.</em>")}
+        ${head("05", T("Experience"), T("Where I’ve <em>worked.</em>"))}
         <ol class="timeline" data-progress>
           <span class="tl-line" aria-hidden="true"><i></i></span>
           ${s.experience.map((e, k) => `
-          <li class="tl-item${e.to === "Present" ? " now" : ""}" data-reveal>
-            <div class="tl-date">${e.from ? `<span>${esc(e.from)}</span><span class="to">— ${esc(e.to)}</span>` : `<span class="to">Independent</span>`}</div>
+          <li class="tl-item${e.now ? " now" : ""}" data-reveal>
+            <div class="tl-date">${e.from ? `<span>${esc(e.from)}</span><span class="to">— ${esc(e.to)}</span>` : `<span class="to">${T("Independent")}</span>`}</div>
             <span class="tl-dot" aria-hidden="true"></span>
             <div class="tl-body">
               <h3>${esc(e.org)}</h3>
               <p class="tl-role">${esc(e.role)}</p>
               ${e.points.length ? `<ul>${e.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
-              ${e.to === "Present" ? `<span class="now-tag"><i></i>Now</span>` : ""}
+              ${e.now ? `<span class="now-tag"><i></i>${T("Now")}</span>` : ""}
             </div>
           </li>`).join("")}
         </ol>
@@ -154,9 +156,9 @@
     </section>`;
 
     const honors = `
-    <section class="sec honors" id="honors" aria-label="Honors and events">
+    <section class="sec honors" id="honors" aria-label="${T("Honors and events")}">
       <div class="wrap">
-        ${head("06", "Honors & events", "Recognition &amp; <em>community.</em>")}
+        ${head("06", T("Honors & events"), T("Recognition &amp; <em>community.</em>"))}
         <div class="honor-grid">
           ${s.honors.map((h, k) => `
           <article class="honor" data-reveal style="--d:${k % 2}">
@@ -170,40 +172,40 @@
     </section>`;
 
     const work = `
-    <section class="sec work" id="work" aria-label="Selected work">
+    <section class="sec work" id="work" aria-label="${T("Selected work")}">
       <div class="wrap">
-        ${head("02", "Selected work", "Let the work <em>speak.</em>", `${total} pieces across ${NUM[s.work.length] || s.work.length} disciplines. Pick one to open it.`)}
+        ${head("02", T("Selected work"), T("Let the work <em>speak.</em>"), AR ? `${U(total, "pieces")} ${T("across")} ${U(s.work.length, "disciplines")}. ${T("Pick one to open it.")}` : `${total} pieces across ${NUM[s.work.length] || s.work.length} disciplines. Pick one to open it.`)}
         <div class="doors">${(() => { const lay = doorLayouts(s.work); return s.work.map((w, k) => door(w, k, lay[k])).join(""); })()}</div>
       </div>
     </section>`;
 
     const links = [];
-    links.push(`<li><a href="${esc(C.behance)}" target="_blank" rel="noopener" data-cursor="Open"><span class="cl-k">Behance</span><span class="cl-v">${esc(C.behance.replace(/^https?:\/\/(www\.)?/, ""))}</span>${icon("arrow-up-right")}</a></li>`);
-    if (C.linkedin) links.push(`<li><a href="${esc(C.linkedin)}" target="_blank" rel="noopener" data-cursor="Open"><span class="cl-k">LinkedIn</span><span class="cl-v">Dana Sukhon</span>${icon("arrow-up-right")}</a></li>`);
+    links.push(`<li><a href="${esc(C.behance)}" target="_blank" rel="noopener" data-cursor="${T("Open")}"><span class="cl-k">Behance</span><span class="cl-v">${esc(C.behance.replace(/^https?:\/\/(www\.)?/, ""))}</span>${icon("arrow-up-right")}</a></li>`);
+    if (C.linkedin) links.push(`<li><a href="${esc(C.linkedin)}" target="_blank" rel="noopener" data-cursor="${T("Open")}"><span class="cl-k">LinkedIn</span><span class="cl-v">${esc(P.name)}</span>${icon("arrow-up-right")}</a></li>`);
     const phoneOn = C.showPhone && C.phone;
     const contact = `
-    <section class="sec contact" id="contact" aria-label="Contact">
+    <section class="sec contact" id="contact" aria-label="${T("Contact")}">
       <div class="wrap">
-        <span class="sec-no" data-reveal><span>07</span>Contact</span>
-        <h2 class="say" data-split>Let’s create something <em>meaningful.</em></h2>
+        <span class="sec-no" data-reveal><span>07</span>${T("Contact")}</span>
+        <h2 class="say" data-split>${T("Let’s create something <em>meaningful.</em>")}</h2>
         <div class="contact-grid">
           <div class="c-main" data-reveal>
-            <a class="c-email" href="mailto:${esc(C.email)}" data-cursor="Write">${esc(C.email)}</a>
-            ${phoneOn ? `<a class="c-phone" href="tel:${esc(C.phone)}" data-cursor="Call">${icon("phone-call")}<span dir="ltr">${esc(C.phoneLabel)}</span></a>` : ""}
+            <a class="c-email" href="mailto:${esc(C.email)}" data-cursor="${T("Write")}">${esc(C.email)}</a>
+            ${phoneOn ? `<a class="c-phone" href="tel:${esc(C.phone)}" data-cursor="${T("Call")}">${icon("phone-call")}<span dir="ltr">${esc(C.phoneLabel)}</span></a>` : ""}
             <div class="c-actions">
-              <a class="btn btn-primary" href="mailto:${esc(C.email)}" data-magnetic><span>Email me</span>${icon("arrow-up-right")}</a>
-              ${phoneOn ? `<a class="btn btn-ghost" href="tel:${esc(C.phone)}">${icon("phone-call")}<span>Call me</span></a>` : ""}
-              <button class="btn btn-ghost" type="button" data-copy="${esc(C.email)}">${icon("copy")}<span>Copy email</span></button>
+              <a class="btn btn-primary" href="mailto:${esc(C.email)}" data-magnetic><span>${T("Email me")}</span>${icon("arrow-up-right")}</a>
+              ${phoneOn ? `<a class="btn btn-ghost" href="tel:${esc(C.phone)}">${icon("phone-call")}<span>${T("Call me")}</span></a>` : ""}
+              <button class="btn btn-ghost" type="button" data-copy="${esc(C.email)}">${icon("copy")}<span>${T("Copy email")}</span></button>
             </div>
           </div>
           <ul class="c-links" data-reveal style="--d:1">
             ${links.join("")}
-            <li class="c-loc">${icon("pin")}<span>Based in ${esc(P.location)}</span></li>
+            <li class="c-loc">${icon("pin")}<span>${T("Based in")} ${esc(P.location)}</span></li>
           </ul>
         </div>
         <div class="c-badge" aria-hidden="true">
           <svg viewBox="0 0 120 120"><defs><path id="talk-circle" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs>
-          <text><textPath href="#talk-circle">Let’s talk · Let’s talk · Let’s talk · </textPath></text></svg>
+          <text><textPath href="#talk-circle">${T("Let’s talk · Let’s talk · Let’s talk · ")}</textPath></text></svg>
           <span>${icon("mail")}</span>
         </div>
       </div>
@@ -231,13 +233,13 @@
   function door(w, k, lay) {
     const n = count(w);
     return `
-    <a class="door door-${w.id} lay-${lay}" href="#${w.id}" style="--acc:${w.acc}" data-cursor="Explore" data-reveal>
+    <a class="door door-${w.id} lay-${lay}" href="#${w.id}" style="--acc:${w.acc}" data-cursor="${T("Explore")}" data-reveal>
       <div class="door-media">${cover(w)}</div>
       <div class="door-info">
         <span class="door-no">${pad(k + 1)}</span>
         <div class="door-txt"><h3>${ital(w.title)}</h3><p>${esc(w.short)}</p></div>
-        <span class="door-count"><b>${n}</b>${esc(w.unit)}</span>
-        <span class="door-go" aria-hidden="true"><span>Open</span>${icon("arrow-up-right")}</span>
+        <span class="door-count"><b>${n}</b>${esc(UL(n, w.unit))}</span>
+        <span class="door-go" aria-hidden="true"><span>${T("Open")}</span>${icon("arrow-up-right")}</span>
       </div>
     </a>`;
   }
@@ -263,7 +265,7 @@
       case "video": return `<div class="cv cv-video">${im(w.cover, "(max-width:760px) 90vw, 50vw")}<span class="cv-play">${icon("play")}</span><span class="cv-sprockets"></span></div>`;
       case "songs": {
         const s = w.sets[0];
-        return `<div class="cv cv-songs"><div class="cv-sleeve"><span class="cv-sl-k">${s.items.length} tracks</span><b>Songs</b><span class="cv-sl-l">English · العربية</span></div><div class="cv-vinyl"><span></span></div><div class="cv-eq"><i></i><i></i><i></i><i></i><i></i></div></div>`;
+        return `<div class="cv cv-songs"><div class="cv-sleeve"><span class="cv-sl-k">${U(s.items.length, "tracks")}</span><b>${T("Songs")}</b><span class="cv-sl-l">English · العربية</span></div><div class="cv-vinyl"><span></span></div><div class="cv-eq"><i></i><i></i><i></i><i></i><i></i></div></div>`;
       }
     }
     return "";
@@ -283,16 +285,16 @@
     if (w.id === "songs") facts.push([2, "languages"]);
     if (w.id === "charstyle") facts.push([5, "turnaround views"]);
     const jumps = [];
-    if (w.process) jumps.push(["process", "How I make them"], ["prompts", "Prompt lab", w.prompts.length]);
+    if (w.process) jumps.push(["process", T("How I make them")], ["prompts", T("Prompt lab"), w.prompts.length]);
     if (w.sets.length > 1 && w.id !== "books") w.sets.forEach((s, j) => jumps.push([String(j), s.title, s.items.length]));
     const body = (BODY[w.id] || (() => ""))(w);
     /* the newspaper page opens with a masthead, like the front of a paper */
     const mast = w.id === "newspaper" ? `
       <header class="cat-hero np-mast">
         <div class="wrap">
-          <div class="mast-top"><span>${esc(w.kicker)}</span><span class="crumb-no">${pad(k + 1)} / ${pad(all.length)}</span><span>${n} ${esc(w.unit)}</span></div>
+          <div class="mast-top"><span>${esc(w.kicker)}</span><span class="crumb-no">${pad(k + 1)} / ${pad(all.length)}</span><span>${U(n, w.unit)}</span></div>
           <h1 class="mast-title">${esc(w.title)}</h1>
-          <div class="mast-bar"><span>Portfolio of ${esc(S().person.name)}</span><span>Arabic edition</span><span>Front page to back page</span></div>
+          <div class="mast-bar"><span>${T("Portfolio of")} ${esc(S().person.name)}</span><span>${T("Arabic edition")}</span><span>${T("Front page to back page")}</span></div>
           <p class="mast-deck" data-reveal>${esc(w.lead)}</p>
         </div>
       </header>` : "";
@@ -308,18 +310,18 @@
               <p class="lead" data-reveal>${esc(w.lead)}</p>
             </div>
             <dl class="facts" data-reveal>
-              ${facts.map((f) => `<div><dt>${esc(f[1])}</dt><dd data-count="${f[0]}">${f[0]}</dd></div>`).join("")}
+              ${facts.map((f) => `<div><dt>${esc(DS.factLabel(f[1]))}</dt><dd data-count="${f[0]}">${f[0]}</dd></div>`).join("")}
             </dl>
           </div>
-          ${jumps.length ? `<nav class="jumps" aria-label="On this page">${jumps.map((j) => `<a class="chip-btn" href="#${w.id}" data-jump="set-${w.id}-${j[0]}">${esc(j[1])}${j[2] ? `<span>${j[2]}</span>` : ""}</a>`).join("")}</nav>` : ""}
+          ${jumps.length ? `<nav class="jumps" aria-label="${T("On this page")}">${jumps.map((j) => `<a class="chip-btn" href="#${w.id}" data-jump="set-${w.id}-${j[0]}">${esc(j[1])}${j[2] ? `<span>${j[2]}</span>` : ""}</a>`).join("")}</nav>` : ""}
         </div>
       </header>
       <div class="cat-body">${body}</div>
-      <nav class="next-cat" aria-label="More work">
+      <nav class="next-cat" aria-label="${T("More work")}">
         <div class="wrap nc-in">
           <a class="nc-prev" href="#${prev.id}">${icon("arrow-left")}<span>${esc(prev.title)}</span></a>
-          <a class="nc-next" href="#${next.id}" style="--c:${next.acc}" data-cursor="Next">
-            <span class="label">Next</span>
+          <a class="nc-next" href="#${next.id}" style="--c:${next.acc}" data-cursor="${T("Next")}">
+            <span class="label">${T("Next")}</span>
             <span class="nc-title"><i class="dot"></i>${ital(next.title)}</span>
             <span class="nc-arrow">${icon("arrow-right")}</span>
           </a>
@@ -332,7 +334,7 @@
     <div class="set-head" data-reveal>
       <span class="label">${label}</span>
       <h2 class="set-title">${ital(s.title)}</h2>
-      <span class="set-count">${s.items.length} ${unit}</span>
+      <span class="set-count">${U(s.items.length, unit)}</span>
       ${s.desc ? `<p class="set-desc">${esc(s.desc)}</p>` : ""}
       ${extra}
     </div>`;
@@ -347,29 +349,29 @@
     return `
     <section class="block wrap" id="set-books-0">
       <div class="bv" data-bv>
-        <div class="bv-tabs" role="tablist" aria-label="Books">
-          ${w.sets.map((s, j) => `<button class="tab" role="tab" aria-selected="${j === 0}" data-book="${j}"><span class="tab-no">${pad(j + 1)}</span><span class="tab-t">${esc(s.title)}</span><span class="tab-n">${s.items.length} pages</span></button>`).join("")}
+        <div class="bv-tabs" role="tablist" aria-label="${T("Books")}">
+          ${w.sets.map((s, j) => `<button class="tab" role="tab" aria-selected="${j === 0}" data-book="${j}"><span class="tab-no">${pad(j + 1)}</span><span class="tab-t">${esc(s.title)}</span><span class="tab-n">${U(s.items.length, "pages")}</span></button>`).join("")}
         </div>
         <div class="bv-main">
           <div class="bv-info">
             <span class="label bv-kicker"></span>
             <h2 class="bv-title"></h2>
             <p class="bv-desc"></p>
-            <div class="bv-ctrl">
-              <button class="round" data-bv-prev aria-label="Previous pages">${icon("arrow-left")}</button>
+            <div class="bv-ctrl" dir="ltr">
+              <button class="round" data-bv-prev aria-label="${T("Previous pages")}">${icon("arrow-left")}</button>
               <span class="bv-count" aria-live="polite"></span>
-              <button class="round" data-bv-next aria-label="Next pages">${icon("arrow-right")}</button>
+              <button class="round" data-bv-next aria-label="${T("Next pages")}">${icon("arrow-right")}</button>
             </div>
-            <button class="link-u bv-zoom" type="button">${icon("zoom")}<span>View these pages full size</span></button>
+            <button class="link-u bv-zoom" type="button">${icon("zoom")}<span>${T("View these pages full size")}</span></button>
           </div>
-          <div class="bv-stage" tabindex="0" aria-label="Book pages. Use the arrow keys to turn the page.">
-            <div class="bv-book">
-              <button class="bv-page l" data-cursor="View"></button>
-              <button class="bv-page r" data-cursor="View"></button>
+          <div class="bv-stage" tabindex="0" aria-label="${T("Book pages. Use the arrow keys to turn the page.")}">
+            <div class="bv-book" dir="ltr">
+              <button class="bv-page l" data-cursor="${T("View")}"></button>
+              <button class="bv-page r" data-cursor="${T("View")}"></button>
             </div>
           </div>
         </div>
-        <div class="bv-strip" aria-label="All pages of this book"></div>
+        <div class="bv-strip" dir="ltr" aria-label="${T("All pages of this book")}"></div>
       </div>
     </section>`;
   };
@@ -387,25 +389,25 @@
       return out;
     };
     const page = (k) => k == null || k === undefined
-      ? `<span class="bv-blank"><em>${esc(w.sets[b].title)}</em><small>${items().length} pages</small></span>`
+      ? `<span class="bv-blank"><em>${esc(w.sets[b].title)}</em><small>${U(items().length, "pages")}</small></span>`
       : DS.img(items()[k].src, { alt: items()[k].alt, sizes: "(max-width: 760px) 88vw, 30vw" });
     const strip = () => {
-      $(".bv-strip", bv).innerHTML = items().map((it, k) => `<button class="bv-th" data-k="${k}" aria-label="Page ${k + 1}: ${esc(it.alt)}"><img src="${DS.thumb(it.src)}" alt="" loading="lazy" width="60" height="80"><span>${k + 1}</span></button>`).join("");
+      $(".bv-strip", bv).innerHTML = items().map((it, k) => `<button class="bv-th" data-k="${k}" aria-label="${T("Page")} ${k + 1}: ${esc(it.alt)}"><img src="${DS.thumb(it.src)}" alt="" loading="lazy" width="60" height="80"><span>${k + 1}</span></button>`).join("");
     };
     const render = () => {
       const sp = spreads()[s], set = w.sets[b];
       bv.classList.toggle("single", single());
-      if (single()) { L.hidden = true; R.innerHTML = page(sp[0]); R.dataset.k = sp[0]; R.setAttribute("aria-label", `Open page ${sp[0] + 1} full size`); }
+      if (single()) { L.hidden = true; R.innerHTML = page(sp[0]); R.dataset.k = sp[0]; R.setAttribute("aria-label", `${T("Open page")} ${sp[0] + 1} ${T("full size")}`); }
       else {
-        L.hidden = false; L.innerHTML = page(sp[0]); L.dataset.k = sp[0]; L.setAttribute("aria-label", `Open page ${sp[0] + 1} full size`);
+        L.hidden = false; L.innerHTML = page(sp[0]); L.dataset.k = sp[0]; L.setAttribute("aria-label", `${T("Open page")} ${sp[0] + 1} ${T("full size")}`);
         R.innerHTML = page(sp[1]); R.dataset.k = sp[1] == null ? "" : sp[1]; R.disabled = sp[1] == null;
-        R.setAttribute("aria-label", sp[1] == null ? "End of book" : `Open page ${sp[1] + 1} full size`);
+        R.setAttribute("aria-label", sp[1] == null ? T("End of book") : `${T("Open page")} ${sp[1] + 1} ${T("full size")}`);
       }
-      $(".bv-kicker", bv).textContent = `Book ${pad(b + 1)} of ${pad(w.sets.length)}`;
+      $(".bv-kicker", bv).textContent = `${T("Book")} ${pad(b + 1)} ${T("of")} ${pad(w.sets.length)}`;
       $(".bv-title", bv).innerHTML = ital(set.title);
       $(".bv-desc", bv).textContent = set.desc;
       const first = sp[0] + 1, last = sp[sp.length - 1] + 1;
-      $(".bv-count", bv).textContent = `${first === last ? "Page " + first : "Pages " + first + "–" + last} of ${items().length}`;
+      $(".bv-count", bv).textContent = `${first === last ? T("Page") + " " + first : T("Pages") + " " + first + "–" + last} ${T("of")} ${items().length}`;
       $("[data-bv-prev]", bv).disabled = s === 0;
       $("[data-bv-next]", bv).disabled = s === spreads().length - 1;
       $$(".bv-th", bv).forEach((th) => th.classList.toggle("on", sp.includes(+th.dataset.k)));
@@ -452,20 +454,20 @@
   BODY.social = (w) => {
     const [a, b] = w.sets;
     group("social-0", a.items, a.title); group("social-1", b.items, b.title);
-    const initials = (a.client || a.title).split(" ").filter((x) => /^[A-Z]/.test(x)).slice(0, 2).map((x) => x[0]).join("");
+    const initials = DS.en(a.client || a.title).split(" ").filter((x) => /^[A-Z]/.test(x)).slice(0, 2).map((x) => x[0]).join("");
     return `
     <section class="block wrap ss" id="set-social-0">
       <div class="ss-grid">
         <div class="ss-info" data-reveal>
-          <span class="label">Series 01</span>
+          <span class="label">${T("Series")} 01</span>
           <h2 class="set-title">${ital(a.title)}</h2>
           <dl class="meta">
-            ${a.client ? `<div><dt>Client</dt><dd>${esc(a.client)}</dd></div>` : ""}
-            <div><dt>Year</dt><dd>${esc(a.year)}</dd></div>
-            <div><dt>Posts</dt><dd>${a.items.length}</dd></div>
+            ${a.client ? `<div><dt>${T("Client")}</dt><dd>${esc(a.client)}</dd></div>` : ""}
+            <div><dt>${T("Year")}</dt><dd>${esc(a.year)}</dd></div>
+            <div><dt>${T("Posts")}</dt><dd>${a.items.length}</dd></div>
           </dl>
           <p class="set-desc">${esc(a.desc)}</p>
-          <button class="btn btn-ghost" data-lb="social-0" data-lb-i="0">${icon("expand")}<span>See the feed full size</span></button>
+          <button class="btn btn-ghost" data-lb="social-0" data-lb-i="0">${icon("expand")}<span>${T("See the feed full size")}</span></button>
         </div>
         <div class="phone-wrap" data-reveal style="--d:1">
           <span class="phone-shape" aria-hidden="true" data-speed="0.04"></span>
@@ -475,12 +477,12 @@
               <div class="ph-status" aria-hidden="true"><span>9:41</span><span class="ph-sig"><i></i><i></i><i></i></span></div>
               <div class="ph-profile">
                 <span class="ph-avatar"><span>${esc(initials)}</span></span>
-                <div class="ph-stats"><div><b>${a.items.length}</b><span>posts</span></div><div><b>${esc(a.year)}</b><span>year</span></div></div>
+                <div class="ph-stats"><div><b>${a.items.length}</b><span>${T("posts")}</span></div><div><b>${esc(a.year)}</b><span>${T("year")}</span></div></div>
               </div>
-              <div class="ph-bio"><b>${esc(a.client || a.title)}</b><span>Educational publishing · Jordan</span></div>
+              <div class="ph-bio"><b>${esc(a.client || a.title)}</b><span>${T("Educational publishing · Jordan")}</span></div>
               <div class="ph-tabbar" aria-hidden="true">${icon("grid")}</div>
               <div class="ph-feed">
-                ${a.items.map((it, k) => `<button class="ph-post" data-lb="social-0" data-lb-i="${k}" data-cursor="View" aria-label="Open post ${k + 1}: ${esc(it.alt)}">${DS.img(it.src, { alt: it.alt, sizes: "(max-width: 760px) 33vw, 140px" })}</button>`).join("")}
+                ${a.items.map((it, k) => `<button class="ph-post" data-lb="social-0" data-lb-i="${k}" data-cursor="${T("View")}" aria-label="${T("Open post")} ${k + 1}: ${esc(it.alt)}">${DS.img(it.src, { alt: it.alt, sizes: "(max-width: 760px) 33vw, 140px" })}</button>`).join("")}
               </div>
             </div>
           </div>
@@ -490,17 +492,17 @@
     <section class="block teaser is-dark" id="set-social-1">
       <div class="wrap">
         <div class="teaser-head">
-          ${setHead("Series 02", b, "posts")}
-          <div class="rail-ctrl">
-            <button class="round" data-rail="-1" aria-label="Scroll back">${icon("arrow-left")}</button>
-            <button class="round" data-rail="1" aria-label="Scroll forward">${icon("arrow-right")}</button>
+          ${setHead(T("Series") + " 02", b, "posts")}
+          <div class="rail-ctrl" dir="ltr">
+            <button class="round" data-rail="-1" aria-label="${T("Scroll back")}">${icon("arrow-left")}</button>
+            <button class="round" data-rail="1" aria-label="${T("Scroll forward")}">${icon("arrow-right")}</button>
           </div>
         </div>
       </div>
-      <div class="rail" tabindex="0" aria-label="${esc(b.title)}: scroll sideways">
-        ${b.items.map((it, k) => `<button class="rail-item" style="--r:${DS.ratio(it.src).toFixed(3)}" data-lb="social-1" data-lb-i="${k}" data-cursor="View" aria-label="Open post ${k + 1}: ${esc(it.alt)}"><span class="ri-no">${pad(k + 1)}</span>${DS.img(it.src, { alt: it.alt, sizes: "(max-width: 760px) 78vw, 30vw" })}</button>`).join("")}
+      <div class="rail" dir="ltr" tabindex="0" aria-label="${esc(b.title)}: ${T("scroll sideways")}">
+        ${b.items.map((it, k) => `<button class="rail-item" style="--r:${DS.ratio(it.src).toFixed(3)}" data-lb="social-1" data-lb-i="${k}" data-cursor="${T("View")}" aria-label="${T("Open post")} ${k + 1}: ${esc(it.alt)}"><span class="ri-no">${pad(k + 1)}</span>${DS.img(it.src, { alt: it.alt, sizes: "(max-width: 760px) 78vw, 30vw" })}</button>`).join("")}
       </div>
-      <div class="wrap"><div class="rail-progress" aria-hidden="true"><i></i></div></div>
+      <div class="wrap"><div class="rail-progress" dir="ltr" aria-hidden="true"><i></i></div></div>
     </section>`;
   };
   DS.init.social = (root) => {
@@ -541,7 +543,7 @@
 
   /* ---------------- NEWSPAPER: laid out like a real paper, opened as spreads ----------------
      Arabic papers read right to left, so in a spread the lower page sits on the right. */
-  const pageLabel = (k, n) => (k === 0 ? "Front page" : k === n - 1 ? "Back page" : `Page ${k + 1}`);
+  const pageLabel = (k, n) => (k === 0 ? T("Front page") : k === n - 1 ? T("Back page") : `${T("Page")} ${k + 1}`);
   BODY.newspaper = (w) => {
     const s = w.sets[0], n = s.items.length;
     group("news-0", s.items, w.title);
@@ -551,18 +553,18 @@
         <div class="nd-bar">
           <span class="nd-now" aria-live="polite"></span>
           <div class="nd-ctrl">
-            <button class="round" data-nd-go="-1" aria-label="Previous pages">${icon("arrow-left")}</button>
-            <button class="round" data-nd-go="1" aria-label="Next pages">${icon("arrow-right")}</button>
-            <button class="link-u nd-open" type="button">${icon("expand")}<span>Full size</span></button>
+            <button class="round" data-nd-go="-1" aria-label="${T("Previous pages")}">${icon("arrow-left")}</button>
+            <button class="round" data-nd-go="1" aria-label="${T("Next pages")}">${icon("arrow-right")}</button>
+            <button class="link-u nd-open" type="button">${icon("expand")}<span>${T("Full size")}</span></button>
           </div>
         </div>
         <div class="nd-spread" data-nd>
           <div class="nd-sheet" dir="rtl"></div>
           <span class="lens lens-read" aria-hidden="true"></span>
         </div>
-        <p class="prints-hint np-hint">${icon("zoom")}<span class="hint-fine">Move over a page to read it through the magnifier. Click a page to open it full size.</span><span class="hint-touch">Swipe to turn the page. Tap a page to open it full size, then zoom in.</span></p>
-        <section class="nd-index" aria-label="In this edition">
-          <h2 class="nd-index-title"><span>In this edition</span></h2>
+        <p class="prints-hint np-hint">${icon("zoom")}<span class="hint-fine">${T("Move over a page to read it through the magnifier. Click a page to open it full size.")}</span><span class="hint-touch">${T("Swipe to turn the page. Tap a page to open it full size, then zoom in.")}</span></p>
+        <section class="nd-index" aria-label="${T("In this edition")}">
+          <h2 class="nd-index-title"><span>${T("In this edition")}</span></h2>
           <ol class="nd-list">
             ${s.items.map((it, k) => `<li><button class="nd-entry" data-k="${k}"><span class="nd-pg">${esc(pageLabel(k, n))}</span><span class="nd-sum">${esc(it.alt.replace(/^[^:]+:\s*/, ""))}</span></button></li>`).join("")}
           </ol>
@@ -584,7 +586,7 @@
     };
     const page = (k) => {
       const it = items[k], [iw, ih] = DS.dims(it.src);
-      return `<button class="nd-page" data-k="${k}" data-nocursor aria-label="${esc(pageLabel(k, n))}: open full size"><img src="${DS.thumb(it.src)}" srcset="${DS.thumb(it.src)} 600w, ${DS.full(it.src)} ${iw}w" sizes="(max-width: 760px) 92vw, 34vw" width="${iw}" height="${ih}" alt="${esc(it.alt)}" decoding="async"></button>`;
+      return `<button class="nd-page" data-k="${k}" data-nocursor aria-label="${esc(pageLabel(k, n))}: ${T("open full size")}"><img src="${DS.thumb(it.src)}" srcset="${DS.thumb(it.src)} 600w, ${DS.full(it.src)} ${iw}w" sizes="(max-width: 760px) 92vw, 34vw" width="${iw}" height="${ih}" alt="${esc(it.alt)}" decoding="async"></button>`;
     };
     const show = (ns, dir = 0) => {
       const all = spreads(); s = Math.max(0, Math.min(all.length - 1, ns));
@@ -594,7 +596,7 @@
       nd.classList.toggle("pair", sp.length === 2);
       if (dir && !DS.reduced.matches) sheet.animate([{ opacity: 0, transform: `translateX(${dir > 0 ? -28 : 28}px)` }, { opacity: 1, transform: "none" }], { duration: 480, easing: "cubic-bezier(.2,.7,.2,1)" });
       const a = sp[0] + 1, b = sp[sp.length - 1] + 1;
-      $(".nd-now", box).innerHTML = `<b>${sp.length === 2 ? `Pages ${a}–${b}` : esc(pageLabel(sp[0], n))}</b><span>${pad(b)} / ${pad(n)}</span>`;
+      $(".nd-now", box).innerHTML = `<b>${sp.length === 2 ? `${T("Pages")} ${a}–${b}` : esc(pageLabel(sp[0], n))}</b><span>${pad(b)} / ${pad(n)}</span>`;
       $$(".nd-entry", box).forEach((e) => e.setAttribute("aria-current", sp.includes(+e.dataset.k) ? "true" : "false"));
       $$("[data-nd-go]", box)[0].disabled = s === 0;
       $$("[data-nd-go]", box)[1].disabled = s === all.length - 1;
@@ -642,7 +644,7 @@
   /* ---------------- CHARACTER STYLE: turn each character around, then read its sheet ----------------
      The 5 turnaround views are cut from the sheet itself (see `turn` in data.js).
      A full spin plays the views 0-4 and then 3-1 mirrored, the way animators complete a turnaround. */
-  const SPIN = [[0, 0, "Front"], [1, 0, "¾ front"], [2, 0, "Side"], [3, 0, "¾ back"], [4, 0, "Back"], [3, 1, "¾ back"], [2, 1, "Side"], [1, 1, "¾ front"]];
+  const SPIN = [[0, 0, "Front"], [1, 0, "¾ front"], [2, 0, "Side"], [3, 0, "¾ back"], [4, 0, "Back"], [3, 1, "¾ back"], [2, 1, "Side"], [1, 1, "¾ front"]].map(([k, f, l]) => [k, f, T(l)]);
   const cropStyle = (it, k) => {
     const t = it.turn, W = DS.dims(it.src)[0], fh = t.y[1] - t.y[0];
     return `width:${((W / t.fw) * 100).toFixed(3)}%;left:${((-(t.x[k] - t.fw / 2) / t.fw) * 100).toFixed(3)}%;top:${((-t.y[0] / fh) * 100).toFixed(3)}%`;
@@ -653,41 +655,41 @@
     group("cs-0", s.items, w.title);
     return `
     <section class="block wrap ts-wrap" id="set-charstyle-0">
-      ${setHead("The sheets", s, "sheets")}
+      ${setHead(T("The sheets"), s, "sheets")}
       <div class="ts" data-ts>
         <div class="ts-stage">
-          <div class="ts-read" aria-hidden="true"><b class="ts-deg">0°</b><span class="ts-view">Front</span></div>
-          <span class="ts-hint" aria-hidden="true">${icon("arrow-left")}<span>Drag to turn</span>${icon("arrow-right")}</span>
-          <div class="ts-turn-wrap">
+          <div class="ts-read" aria-hidden="true"><b class="ts-deg">0°</b><span class="ts-view">${T("Front")}</span></div>
+          <span class="ts-hint" aria-hidden="true">${icon("arrow-left")}<span>${T("Drag to turn")}</span>${icon("arrow-right")}</span>
+          <div class="ts-turn-wrap" dir="ltr">
             <span class="ts-disc" aria-hidden="true"></span>
-            <div class="ts-turn" tabindex="0" role="slider" aria-label="Turn the character. Use the left and right arrow keys." aria-valuemin="0" aria-valuemax="315" aria-valuenow="0" aria-valuetext="Front" data-cursor="Drag">
+            <div class="ts-turn" tabindex="0" role="slider" aria-label="${T("Turn the character. Use the left and right arrow keys.")}" aria-valuemin="0" aria-valuemax="315" aria-valuenow="0" aria-valuetext="${T("Front")}" data-cursor="${T("Drag")}">
               <div class="ts-frames"></div>
             </div>
           </div>
-          <div class="ts-timeline" role="group" aria-label="Turnaround frames"></div>
+          <div class="ts-timeline" dir="ltr" role="group" aria-label="${T("Turnaround frames")}"></div>
         </div>
         <div class="ts-side">
-          <div class="ts-now" aria-live="polite"><span class="ts-no"></span><h3 class="ts-name"></h3><p class="ts-sub">Model sheet for animation</p></div>
+          <div class="ts-now" aria-live="polite"><span class="ts-no"></span><h3 class="ts-name"></h3><p class="ts-sub">${T("Model sheet for animation")}</p></div>
           <div class="ts-actions">
-            <button class="btn btn-primary ts-spin" type="button" aria-pressed="false">${icon("play")}<span>Spin</span></button>
-            <button class="btn btn-ghost ts-open" type="button">${icon("expand")}<span>Open full sheet</span></button>
-            <a class="link-u ts-anim" href="#video" data-jump-after="set-video-1">${icon("film")}<span>See them animated</span></a>
+            <button class="btn btn-primary ts-spin" type="button" aria-pressed="false">${icon("play")}<span>${T("Spin")}</span></button>
+            <button class="btn btn-ghost ts-open" type="button">${icon("expand")}<span>${T("Open full sheet")}</span></button>
+            <a class="link-u ts-anim" href="#video" data-jump-after="set-video-1">${icon("film")}<span>${T("See them animated")}</span></a>
           </div>
           <div class="ts-cast-box">
-            <span class="label">The cast</span>
-            <div class="ts-cast" role="listbox" aria-label="Characters">
+            <span class="label">${T("The cast")}</span>
+            <div class="ts-cast" role="listbox" aria-label="${T("Characters")}">
               ${s.items.map((it, i) => `<button class="ts-pick" role="option" aria-selected="${i === 0}" data-i="${i}" aria-label="${esc(it.name)}" data-tip="${esc(it.name)}"><span class="ts-pick-fig" style="--fa:${figRatio(it)}"><img src="${DS.full(it.front)}" alt="" loading="lazy" decoding="async"></span><span class="ts-pick-no">${pad(i + 1)}</span></button>`).join("")}
             </div>
           </div>
           <div class="ts-incl">
-            <span class="label">On every sheet</span>
+            <span class="label">${T("On every sheet")}</span>
             <ul>${(w.includes || []).map((x) => `<li>${icon("check")}<span>${esc(x)}</span></li>`).join("")}</ul>
           </div>
         </div>
       </div>
       <figure class="ts-sheet">
-        <button class="ts-sheet-btn" type="button" data-nocursor aria-label="Open the full sheet"><span class="ts-sheet-img"></span><span class="lens lens-read" aria-hidden="true"></span></button>
-        <figcaption><span class="label">The full sheet</span><span class="ts-sheet-name"></span><span class="hint-fine">Move over the sheet to look closely. Click to open it full size.</span><span class="hint-touch">Tap the sheet to open it full size, then zoom in.</span></figcaption>
+        <button class="ts-sheet-btn" type="button" data-nocursor aria-label="${T("Open the full sheet")}"><span class="ts-sheet-img"></span><span class="lens lens-read" aria-hidden="true"></span></button>
+        <figcaption><span class="label">${T("The full sheet")}</span><span class="ts-sheet-name"></span><span class="hint-fine">${T("Move over the sheet to look closely. Click to open it full size.")}</span><span class="hint-touch">${T("Tap the sheet to open it full size, then zoom in.")}</span></figcaption>
       </figure>
     </section>`;
   };
@@ -708,11 +710,11 @@
       /* the platform turns with the character (it keeps counting past 360° so it never spins back) */
       turns += ((((p - prev) % N) + N + N / 2) % N) - N / 2;   /* shortest way round */
       $(".ts-stage", ts).style.setProperty("--a", `${-turns * 45}deg`);
-      turn.setAttribute("aria-valuenow", p * 45); turn.setAttribute("aria-valuetext", label + (flip ? " (other side)" : ""));
+      turn.setAttribute("aria-valuenow", p * 45); turn.setAttribute("aria-valuetext", label + (flip ? " " + T("(other side)") : ""));
       $$(".tl-cell", ts).forEach((b) => b.setAttribute("aria-pressed", +b.dataset.p === p ? "true" : "false"));
     };
     const timeline = (it) => SPIN.map(([k, flip, label], q) => `
-      <button class="tl-cell" type="button" data-p="${q}" aria-pressed="${q === p}" aria-label="Frame ${q + 1}: ${label}${flip ? " (other side)" : ""}, ${q * 45} degrees">
+      <button class="tl-cell" type="button" data-p="${q}" aria-pressed="${q === p}" aria-label="${T("Frame")} ${q + 1}: ${label}${flip ? " " + T("(other side)") : ""}, ${q * 45} ${T("degrees")}">
         <span class="tl-frame${flip ? " flip" : ""}" style="--fa:${figRatio(it)}"><img src="${DS.full(it.src)}" alt="" style="${cropStyle(it, k)}" decoding="async" draggable="false"></span>
         <span class="tl-no">${pad(q + 1)}</span><span class="tl-deg">${q * 45}°</span>
       </button>`).join("");
@@ -722,21 +724,21 @@
       turn.style.setProperty("--fa", figRatio(it));
       frames.innerHTML = [0, 1, 2, 3, 4].map((k) => `<img src="${DS.full(it.src)}" alt="" data-k="${k}" style="${cropStyle(it, k)}" decoding="async" draggable="false">`).join("");
       $(".ts-timeline", ts).innerHTML = timeline(it);
-      $(".ts-no", ts).textContent = `No. ${pad(i + 1)} / ${pad(items.length)}`;
+      $(".ts-no", ts).textContent = `${T("No.")} ${pad(i + 1)} / ${pad(items.length)}`;
       $(".ts-name", ts).innerHTML = ital(it.name);
       $$(".ts-pick", ts).forEach((b) => b.setAttribute("aria-selected", +b.dataset.i === i ? "true" : "false"));
       const [iw, ih] = DS.dims(it.src);
       $(".ts-sheet-img", sheetBtn).innerHTML = `<img src="${DS.thumb(it.src)}" srcset="${DS.thumb(it.src)} 600w, ${DS.full(it.src)} ${iw}w" sizes="(max-width: 760px) 92vw, 1320px" width="${iw}" height="${ih}" alt="${esc(it.alt)}" decoding="async">`;
       lens.style.backgroundImage = `url('${DS.full(it.src)}')`;
       $(".ts-sheet-name", root).textContent = it.name;
-      turn.setAttribute("aria-label", `Turn the ${it.name.toLowerCase()} around. Use the left and right arrow keys.`);
+      turn.setAttribute("aria-label", AR ? `${T("Turn the character. Use the left and right arrow keys.")} (${it.name})` : `Turn the ${it.name.toLowerCase()} around. Use the left and right arrow keys.`);
       setP(p);
     };
-    const stop = () => { clearInterval(timer); timer = null; const b = $(".ts-spin", ts); b.setAttribute("aria-pressed", "false"); b.innerHTML = `${icon("play")}<span>Spin</span>`; };
+    const stop = () => { clearInterval(timer); timer = null; const b = $(".ts-spin", ts); b.setAttribute("aria-pressed", "false"); b.innerHTML = `${icon("play")}<span>${T("Spin")}</span>`; };
     const spin = (once = false) => {
       if (timer) { stop(); return; }
       let steps = 0;
-      const b = $(".ts-spin", ts); b.setAttribute("aria-pressed", "true"); b.innerHTML = `${icon("pause")}<span>Stop</span>`;
+      const b = $(".ts-spin", ts); b.setAttribute("aria-pressed", "true"); b.innerHTML = `${icon("pause")}<span>${T("Stop")}</span>`;
       timer = setInterval(() => {
         if (!turn.isConnected) { clearInterval(timer); timer = null; return; }   /* the visitor left the page */
         setP(p + 1); steps++; if (once && steps >= SPIN.length) stop();
@@ -794,20 +796,20 @@
     const day = (d) => new Date(d + "T12:00:00");
     return `
     <section class="block wrap writing" id="set-writing-0">
-      ${setHead("The articles", s, "articles")}
+      ${setHead(T("The articles"), s, "articles")}
       <ol class="articles">
         ${items.map((it, k) => `
         <li class="art" data-reveal style="--d:${k % 3}">
-          <a class="art-link" href="${esc(it.url)}" target="_blank" rel="noopener" data-cursor="Read">
-            <span class="art-date">${it.date ? `<b>${day(it.date).getDate()}</b><span>${day(it.date).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</span>` : `<span>Date to come</span>`}</span>
+          <a class="art-link" href="${esc(it.url)}" target="_blank" rel="noopener" data-cursor="${T("Read")}">
+            <span class="art-date">${it.date ? `<b>${day(it.date).getDate()}</b><span>${day(it.date).toLocaleDateString(AR ? "ar-JO-u-nu-latn" : "en-GB", { month: "long", year: "numeric" })}</span>` : `<span>${T("Date to come")}</span>`}</span>
             <span class="art-info">
               <span class="art-meta"><span class="art-kind">${esc(it.kind)}</span><span class="art-outlet">${t(it.outlet)}</span></span>
               ${it.summary ? `<span class="art-sum">${esc(it.summary)}</span>` : ""}
               ${it.note ? `<span class="art-note">${esc(it.note)}</span>` : ""}
             </span>
-            ${it.title ? `<b class="art-title" lang="ar" dir="rtl">${esc(it.title)}</b>` : `<b class="art-title art-en">Read the article on ${esc(it.outlet)}</b>`}
+            ${it.title ? `<b class="art-title" lang="ar" dir="rtl">${esc(it.title)}</b>` : `<b class="art-title art-en">${T("Read the article on")} ${esc(it.outlet)}</b>`}
             <span class="art-go" aria-hidden="true">${icon("arrow-up-right")}</span>
-            <span class="sr-only">(opens in a new tab)</span>
+            <span class="sr-only">${T("(opens in a new tab)")}</span>
           </a>
         </li>`).join("")}
       </ol>
@@ -820,19 +822,19 @@
     group("posters-0", s.items, w.title);
     return `
     <section class="block poster-room" id="set-posters-0">
-      <div class="wrap">${setHead("The posters", s, "posters")}</div>
-      <div class="cflow" data-cflow tabindex="0" aria-roledescription="carousel" aria-label="Posters. Use the left and right arrow keys to browse.">
-        <div class="cf-stage">
+      <div class="wrap">${setHead(T("The posters"), s, "posters")}</div>
+      <div class="cflow" data-cflow tabindex="0" aria-roledescription="carousel" aria-label="${T("Posters. Use the left and right arrow keys to browse.")}">
+        <div class="cf-stage" dir="ltr">
           ${s.items.map((it, k) => `<button class="cf-item" data-k="${k}" style="--r:${DS.ratio(it.src).toFixed(3)}" aria-label="${esc(it.alt)}">${DS.img(it.src, { alt: "", sizes: "(max-width: 760px) 70vw, 32vw" })}</button>`).join("")}
         </div>
         <div class="wrap cf-bar">
           <div class="cf-cap" aria-live="polite"><span class="cf-no"></span><b class="cf-title"></b><span class="cf-note"></span></div>
-          <div class="cf-ctrl">
-            <button class="round" data-cf="-1" aria-label="Previous poster">${icon("arrow-left")}</button>
-            <button class="round" data-cf="1" aria-label="Next poster">${icon("arrow-right")}</button>
+          <div class="cf-ctrl" dir="ltr">
+            <button class="round" data-cf="-1" aria-label="${T("Previous poster")}">${icon("arrow-left")}</button>
+            <button class="round" data-cf="1" aria-label="${T("Next poster")}">${icon("arrow-right")}</button>
           </div>
         </div>
-        <p class="prints-hint">${icon("expand")}<span>Click the poster in front to see it full size. Use the arrows, the arrow keys or a swipe to browse.</span></p>
+        <p class="prints-hint">${icon("expand")}<span>${T("Click the poster in front to see it full size. Use the arrows, the arrow keys or a swipe to browse.")}</span></p>
       </div>
     </section>`;
   };
@@ -852,11 +854,11 @@
         el.style.filter = d ? `brightness(${a === 1 ? 0.84 : 0.7})` : "none";
         el.style.pointerEvents = a > 2 ? "none" : "";
         el.classList.toggle("on", d === 0);
-        el.dataset.cursor = d === 0 ? "View" : "Show";
+        el.dataset.cursor = d === 0 ? T("View") : T("Show");
         el.tabIndex = d === 0 ? 0 : -1;
       });
       const it = items[i];
-      $(".cf-no", cf).textContent = `No. ${pad(i + 1)} / ${pad(items.length)}`;
+      $(".cf-no", cf).textContent = `${T("No.")} ${pad(i + 1)} / ${pad(items.length)}`;
       $(".cf-title", cf).innerHTML = t(it.title);
       $(".cf-note", cf).textContent = it.note || "";
       btns[0].disabled = i === 0; btns[1].disabled = i === items.length - 1;
@@ -886,22 +888,22 @@
     return `
     <section class="block kufi-wall" id="set-kufi-0">
       <div class="wrap">
-        ${setHead("The prints", s, "prints")}
+        ${setHead(T("The prints"), s, "prints")}
         <div class="prints">
           ${s.items.map((it, k) => `
           <figure class="print" data-reveal style="--d:${k}">
-            <button class="print-frame" data-lb="kufi-0" data-lb-i="${k}" data-nocursor aria-label="See print ${k + 1} full size">
+            <button class="print-frame" data-lb="kufi-0" data-lb-i="${k}" data-nocursor aria-label="${T("See print")} ${k + 1} ${T("full size")}">
               <span class="print-mat">${DS.img(it.src, { alt: it.alt, sizes: "(max-width: 760px) 86vw, 34vw", attrs: `data-full="${DS.full(it.src)}"` })}</span>
               <span class="lens" aria-hidden="true"></span>
             </button>
             <figcaption>
-              <span class="pr-no">No. ${pad(k + 1)}</span>
+              <span class="pr-no">${T("No.")} ${pad(k + 1)}</span>
               <b class="pr-t">${t(it.title)}</b>
               <span class="pr-note">${esc(it.note || "")}</span>
             </figcaption>
           </figure>`).join("")}
         </div>
-        <p class="prints-hint">${icon("zoom")}<span class="hint-fine">Move over a print to look closely at the grid. Click to open it full size.</span><span class="hint-touch">Tap a print to open it full size.</span></p>
+        <p class="prints-hint">${icon("zoom")}<span class="hint-fine">${T("Move over a print to look closely at the grid. Click to open it full size.")}</span><span class="hint-touch">${T("Tap a print to open it full size.")}</span></p>
       </div>
     </section>`;
   };
@@ -935,11 +937,11 @@
         <div class="rs-stage" data-reveal>
           <span class="rs-arch" aria-hidden="true"></span>
           <span class="rs-spark" aria-hidden="true">${sparkle}</span>
-          <button class="rs-hero" data-cursor="View" aria-label="See this character full size"></button>
+          <button class="rs-hero" data-cursor="${T("View")}" aria-label="${T("See this character full size")}"></button>
           <div class="rs-ctrl">
-            <button class="round" data-rs="-1" aria-label="Previous character">${icon("arrow-left")}</button>
+            <button class="round" data-rs="-1" aria-label="${T("Previous character")}">${icon("arrow-left")}</button>
             <span class="rs-no" aria-live="polite"></span>
-            <button class="round" data-rs="1" aria-label="Next character">${icon("arrow-right")}</button>
+            <button class="round" data-rs="1" aria-label="${T("Next character")}">${icon("arrow-right")}</button>
           </div>
         </div>
         <div class="rs-side">
@@ -948,7 +950,7 @@
             <h2 class="rs-name"></h2>
             <p class="rs-alt"></p>
           </div>
-          <div class="rs-list" role="listbox" aria-label="Characters">
+          <div class="rs-list" role="listbox" aria-label="${T("Characters")}">
             ${s.items.map((it, k) => `<button class="rs-card" role="option" aria-selected="${k === 0}" data-k="${k}" style="--i:${k}"><span class="rs-thumb"><img src="${DS.thumb(it.src)}" alt="" loading="lazy"></span><span class="rs-cn">${esc(it.name)}</span></button>`).join("")}
           </div>
           <p class="rs-hint">${esc(s.desc)}</p>
@@ -987,16 +989,16 @@
   };
 
   /* ---------------- AI IMAGES: process, prompt lab, four collections ---------------- */
-  const PART_NAMES = { s: "Subject", st: "Style", l: "Light", c: "Camera & framing", co: "Colour", r: "Ratio" };
+  const PART_NAMES = { s: T("Subject"), st: T("Style"), l: T("Light"), c: T("Camera & framing"), co: T("Colour"), r: T("Ratio") };
   BODY.ai = (w) => {
-    group("ai-prompts", w.prompts, "Prompt examples");
+    group("ai-prompts", w.prompts, T("Prompt examples"));
     const sets = w.sets.map((s, j) => { group(`ai-${j}`, s.items, s.title); return aiSet(s, j); }).join("");
     return `
     <section class="block wrap" id="set-ai-process">
       <div class="block-head" data-reveal>
-        <span class="label">How I make them</span>
-        <h2 class="bh-title">From story to <em>final image.</em></h2>
-        <p class="bh-sub">Tools: ${esc(w.tools)}</p>
+        <span class="label">${T("How I make them")}</span>
+        <h2 class="bh-title">${T("From story to <em>final image.</em>")}</h2>
+        <p class="bh-sub">${T("Tools")}: ${esc(w.tools)}</p>
       </div>
       <ol class="flow">
         ${w.process.map((p, k) => `<li data-reveal style="--d:${k}"><span class="fl-no">${pad(k + 1)}</span><span class="fl-tool${p.tool === "Magnific AI" ? " gold" : ""}">${esc(p.tool)}</span><h3>${esc(p.title)}</h3><p>${esc(p.text)}</p></li>`).join("")}
@@ -1004,38 +1006,38 @@
     </section>
     <section class="block wrap" id="set-ai-prompts">
       <div class="block-head" data-reveal>
-        <span class="label">Prompt lab</span>
-        <h2 class="bh-title">Prompt <em>examples.</em></h2>
-        <p class="bh-sub">One prompt for each style I work in. Every part of a prompt has a job: switch styles to see how each one is built.</p>
+        <span class="label">${T("Prompt lab")}</span>
+        <h2 class="bh-title">${T("Prompt <em>examples.</em>")}</h2>
+        <p class="bh-sub">${T("One prompt for each style I work in. Every part of a prompt has a job: switch styles to see how each one is built.")}</p>
       </div>
       <div class="lab" data-lab data-reveal>
         <div class="editor">
           <div class="ed-top">
             <span class="ed-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-            <div class="ed-tabs" role="tablist" aria-label="Prompt styles">
+            <div class="ed-tabs" role="tablist" aria-label="${T("Prompt styles")}">
               ${w.prompts.map((p, k) => `<button class="tab" role="tab" aria-selected="${k === 0}" data-p="${k}">${esc(p.style)}</button>`).join("")}
             </div>
           </div>
-          <div class="code" aria-live="polite"></div>
-          <div class="legend" aria-label="Colour key">${Object.entries(PART_NAMES).map(([k, v]) => `<span class="tk-${k}"><i></i>${v}</span>`).join("")}</div>
-          <div class="ed-foot"><span class="ed-from"></span><button class="btn btn-ghost btn-sm" type="button" data-copy-prompt>${icon("copy")}<span>Copy prompt</span></button></div>
+          <div class="code" dir="ltr" aria-live="polite"></div>
+          <div class="legend" aria-label="${T("Colour key")}">${Object.entries(PART_NAMES).map(([k, v]) => `<span class="tk-${k}"><i></i>${v}</span>`).join("")}</div>
+          <div class="ed-foot"><span class="ed-from"></span><button class="btn btn-ghost btn-sm" type="button" data-copy-prompt>${icon("copy")}<span>${T("Copy prompt")}</span></button></div>
         </div>
         <figure class="output">
-          <button class="out-img" data-cursor="View" aria-label="See the result full size"></button>
-          <figcaption><span class="label">Result</span><b class="out-style"></b></figcaption>
+          <button class="out-img" data-cursor="${T("View")}" aria-label="${T("See the result full size")}"></button>
+          <figcaption><span class="label">${T("Result")}</span><b class="out-style"></b></figcaption>
         </figure>
       </div>
     </section>
     ${sets}`;
   };
   function aiSet(s, j) {
-    const cell = (it, k, cls = "", sizes) => `<button class="gi ${cls}" data-lb="ai-${j}" data-lb-i="${k}" data-cursor="View" style="--r:${DS.ratio(it.src).toFixed(3)}" aria-label="Open: ${esc(it.alt)}">${DS.img(it.src, { alt: it.alt, sizes })}<span class="gi-cap">${esc(it.alt)}</span></button>`;
+    const cell = (it, k, cls = "", sizes) => `<button class="gi ${cls}" data-lb="ai-${j}" data-lb-i="${k}" data-cursor="${T("View")}" style="--r:${DS.ratio(it.src).toFixed(3)}" aria-label="${T("Open:")} ${esc(it.alt)}">${DS.img(it.src, { alt: it.alt, sizes })}<span class="gi-cap">${esc(it.alt)}</span></button>`;
     let inner = "";
     if (s.layout === "rows") inner = `<div class="jrows">${s.items.map((it, k) => cell(it, k, "jr", "(max-width: 760px) 90vw, 33vw")).join("")}</div>`;
     else if (s.layout === "squares") inner = `<div class="squares">${s.items.map((it, k) => cell(it, k, "sq", "(max-width: 760px) 45vw, 20vw")).join("")}</div>`;
     else if (s.layout === "mosaic") inner = `<div class="mosaic">${s.items.map((it, k) => cell(it, k, "m" + k, "(max-width: 760px) 90vw, 45vw")).join("")}</div>`;
-    else inner = `<div class="wall">${s.items.map((it, k) => `<figure class="wl" data-reveal>${cell(it, k, "", "(max-width: 760px) 90vw, 30vw")}<figcaption><span>No. ${pad(k + 1)}</span>${esc(it.alt)}</figcaption></figure>`).join("")}</div>`;
-    return `<section class="block wrap ai-set ai-${s.layout}" id="set-ai-${j}">${setHead("Collection " + pad(j + 1), s, "images")}${inner}</section>`;
+    else inner = `<div class="wall">${s.items.map((it, k) => `<figure class="wl" data-reveal>${cell(it, k, "", "(max-width: 760px) 90vw, 30vw")}<figcaption><span>${T("No.")} ${pad(k + 1)}</span>${esc(it.alt)}</figcaption></figure>`).join("")}</div>`;
+    return `<section class="block wrap ai-set ai-${s.layout}" id="set-ai-${j}">${setHead(T("Collection") + " " + pad(j + 1), s, "images")}${inner}</section>`;
   }
   DS.init.ai = (root) => {
     const w = S().work.find((x) => x.id === "ai");
@@ -1044,7 +1046,7 @@
     const render = (k) => {
       cur = k; const p = w.prompts[k];
       $$(".ed-tabs .tab", lab).forEach((tb) => tb.setAttribute("aria-selected", +tb.dataset.p === k));
-      $(".ed-from", lab).textContent = "From: " + p.from;
+      $(".ed-from", lab).textContent = T("From") + ": " + p.from;
       $(".out-style", lab).textContent = p.style;
       const [iw, ih] = DS.dims(p.src);
       const out = $(".out-img", lab);
@@ -1086,7 +1088,7 @@
     /* before it starts, show the first prompt in full (no empty box) */
     const p0 = w.prompts[0];
     code.innerHTML = `<span class="pfx">&gt; </span>` + p0.parts.map((x) => (typeof x === "string" ? esc(x) : `<span class="tk tk-${x[0]}">${esc(x[1])}</span>`)).join("");
-    $(".out-style", lab).textContent = p0.style; $(".ed-from", lab).textContent = "From: " + p0.from;
+    $(".out-style", lab).textContent = p0.style; $(".ed-from", lab).textContent = T("From") + ": " + p0.from;
     const [iw, ih] = DS.dims(p0.src);
     $(".out-img", lab).innerHTML = `<img src="${DS.full(p0.src)}" alt="${esc(p0.alt)}" width="${iw}" height="${ih}" loading="lazy">`;
   };
@@ -1095,23 +1097,23 @@
   const poster = (it, big) => it.thumb
     ? (big ? `<span class="scr-blur" style="background-image:url('${DS.full(it.thumb)}')"></span><img class="scr-img" src="${DS.full(it.thumb)}" alt="" width="${DS.dims(it.thumb)[0]}" height="${DS.dims(it.thumb)[1]}">`
            : `<img src="${DS.dims(it.thumb)[0] > 600 ? DS.thumb(it.thumb) : DS.full(it.thumb)}" alt="" loading="lazy">`)
-    : `<span class="vcover"><span class="vc-ic">${icon("film")}</span><b>${t(it.title)}</b><small>No preview frame yet</small></span>`;
+    : `<span class="vcover"><span class="vc-ic">${icon("film")}</span><b>${t(it.title)}</b><small>${T("No preview frame yet")}</small></span>`;
   BODY.video = (w) => {
     const s = w.sets[0], sc = w.sets[1];
     /* second set: unedited scenes, a wall of clips (they preview silently on hover) */
     const scenes = !sc ? "" : `
     <section class="block wrap scenes" id="set-video-1">
-      ${setHead("Raw scenes", sc, "scenes")}
+      ${setHead(T("Raw scenes"), sc, "scenes")}
       <div class="scene-wall">
         ${sc.items.map((it, j) => `
-        <button class="scene" type="button" data-k="${s.items.length + j}" data-cursor="Play" aria-label="Play scene ${j + 1}, ${esc(it.title)}, on the big screen">
+        <button class="scene" type="button" data-k="${s.items.length + j}" data-cursor="${T("Play")}" aria-label="${T("Play scene")} ${j + 1}, ${esc(it.title)}, ${T("on the big screen")}">
           <span class="sc-frame">
             <img src="${DS.thumb(it.thumb)}" alt="" loading="lazy" width="600" height="338">
             <video muted loop playsinline preload="none" data-src="${esc(it.file)}" aria-hidden="true" tabindex="-1"></video>
             <span class="sc-play" aria-hidden="true">${icon("play")}</span>
             <span class="sc-dur">0:${pad(it.dur || 0)}</span>
           </span>
-          <span class="sc-meta"><span class="sc-no">Scene ${pad(j + 1)}</span><b>${esc(it.title)}</b></span>
+          <span class="sc-meta"><span class="sc-no">${T("Scene")} ${pad(j + 1)}</span><b>${esc(it.title)}</b></span>
         </button>`).join("")}
       </div>
     </section>`;
@@ -1126,14 +1128,14 @@
           <div class="screen-bar">
             <div class="sb-meta"><span class="sb-no"></span><span class="sb-kind"></span><h2 class="sb-title"></h2></div>
             <div class="sb-ctrl">
-              <a class="link-u sb-drive" target="_blank" rel="noopener">${icon("drive")}<span>Open on Google Drive</span></a>
-              <button class="round" data-cv="-1" aria-label="Previous video">${icon("arrow-left")}</button>
-              <button class="round" data-cv="1" aria-label="Next video">${icon("arrow-right")}</button>
+              <a class="link-u sb-drive" target="_blank" rel="noopener">${icon("drive")}<span>${T("Open on Google Drive")}</span></a>
+              <button class="round" data-cv="-1" aria-label="${T("Previous video")}">${icon("arrow-left")}</button>
+              <button class="round" data-cv="1" aria-label="${T("Next video")}">${icon("arrow-right")}</button>
             </div>
           </div>
         </div>
-        <div class="reel" role="listbox" aria-label="Videos">
-          ${s.items.map((it, k) => `<button class="reel-item${it.r < 1 ? " tall" : ""}" role="option" aria-selected="${k === 0}" data-k="${k}" data-cursor="Play" style="--i:${k}">
+        <div class="reel" role="listbox" aria-label="${T("Videos")}">
+          ${s.items.map((it, k) => `<button class="reel-item${it.r < 1 ? " tall" : ""}" role="option" aria-selected="${k === 0}" data-k="${k}" data-cursor="${T("Play")}" style="--i:${k}">
             <span class="ri-frame">${poster(it)}<span class="ri-play">${icon("play")}</span></span>
             <span class="ri-meta"><span class="ri-kind">${pad(k + 1)} · ${esc(it.kind)}</span><b>${t(it.title)}</b></span>
           </button>`).join("")}
@@ -1157,7 +1159,7 @@
         if (v) { v.play().catch(() => {}); v.addEventListener("play", () => DS.player.audio.pause()); }
         DS.player.audio.pause();
       } else {
-        scr.innerHTML = `<div class="scr-poster">${poster(it, true)}<button class="scr-play" data-cursor="Play" aria-label="Play ${esc(it.title)}">${icon("play")}<span>Play</span></button></div>`;
+        scr.innerHTML = `<div class="scr-poster">${poster(it, true)}<button class="scr-play" data-cursor="${T("Play")}" aria-label="${T("Play")} ${esc(it.title)}">${icon("play")}<span>${T("Play")}</span></button></div>`;
         $(".scr-play", scr).addEventListener("click", () => show(i, true));
         if (!DS.reduced.matches) $(".scr-poster", scr).animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420 });
       }
@@ -1196,7 +1198,7 @@
   };
 
   /* ---------------- SONGS: a record sleeve and a tracklist ---------------- */
-  const langLabel = (it) => (it.lang === "en" ? "English" : it.lang === "ar" ? "Arabic" : "Children’s song");
+  const langLabel = (it) => T(it.lang === "en" ? "English" : it.lang === "ar" ? "Arabic" : "Children’s song");
   BODY.songs = (w) => {
     const s = w.sets[0];
     return `
@@ -1208,23 +1210,23 @@
             <div class="vinyl" aria-hidden="true"><span class="v-label"></span></div>
           </div>
           <div class="deck-info">
-            <span class="label deck-state">Ready to play</span>
-            <div class="seekbox">
-              <input class="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Song position">
+            <span class="label deck-state">${T("Ready to play")}</span>
+            <div class="seekbox" dir="ltr">
+              <input class="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="${T("Song position")}">
               <div class="times"><span class="t-cur">0:00</span><span class="t-dur">–:––</span></div>
             </div>
             <div class="deck-ctrl">
-              <button class="round" data-pl-step="-1" aria-label="Previous song">${icon("prev")}</button>
-              <button class="play-big" data-pl-toggle aria-label="Play">${icon("play")}</button>
-              <button class="round" data-pl-step="1" aria-label="Next song">${icon("next")}</button>
+              <button class="round" data-pl-step="-1" aria-label="${T("Previous song")}">${icon("prev")}</button>
+              <button class="play-big" data-pl-toggle aria-label="${T("Play")}">${icon("play")}</button>
+              <button class="round" data-pl-step="1" aria-label="${T("Next song")}">${icon("next")}</button>
             </div>
-            <a class="link-u deck-drive" target="_blank" rel="noopener">${icon("drive")}<span>Open on Google Drive</span></a>
+            <a class="link-u deck-drive" target="_blank" rel="noopener">${icon("drive")}<span>${T("Open on Google Drive")}</span></a>
           </div>
         </div>
-        <ol class="tracks" aria-label="Songs">
+        <ol class="tracks" aria-label="${T("Songs")}">
           ${s.items.map((it, k) => `
           <li class="track" data-k="${k}" style="--i:${k}">
-            <button class="tr-btn" data-pl="${k}" aria-label="Play ${esc(it.title)}">
+            <button class="tr-btn" data-pl="${k}" aria-label="${T("Play")} ${esc(it.title)}">
               <span class="tr-cover" style="${DS.songVars(k)}"><span class="tc-pat p${k % 5}"></span><span class="tc-no">${pad(k + 1)}</span><span class="tr-ic">${icon("play")}</span></span>
               <span class="tr-meta"><b class="tr-title">${t(it.title)}</b><span class="tr-lang">${langLabel(it)}</span></span>
               <span class="tr-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
@@ -1262,9 +1264,9 @@
       if (!m.isConnected) { off(); return; }
       const k = st.i >= 0 ? st.i : view; if (k !== view || st.i >= 0) { view = k; setDeck(k); }
       m.classList.toggle("playing", st.playing);
-      $(".deck-state", m).textContent = st.i < 0 ? "Ready to play" : st.item && st.item.failed ? "Playing on Google Drive" : st.playing ? "Now playing" : "Paused";
+      $(".deck-state", m).textContent = T(st.i < 0 ? "Ready to play" : st.item && st.item.failed ? "Playing on Google Drive" : st.playing ? "Now playing" : "Paused");
       $("[data-pl-toggle]", m).innerHTML = icon(st.playing ? "pause" : "play");
-      $("[data-pl-toggle]", m).setAttribute("aria-label", st.playing ? "Pause" : "Play");
+      $("[data-pl-toggle]", m).setAttribute("aria-label", T(st.playing ? "Pause" : "Play"));
       $(".t-cur", m).textContent = DS.time(st.t) === "–:––" ? "0:00" : DS.time(st.t);
       $(".t-dur", m).textContent = DS.time(st.d);
       if (!seeking) seek.value = st.d ? Math.round((st.t / st.d) * 1000) : 0;
@@ -1273,7 +1275,7 @@
         const on = +tr.dataset.k === st.i;
         tr.classList.toggle("on", on); tr.classList.toggle("playing", on && st.playing);
         $(".tr-ic", tr).innerHTML = icon(on && st.playing ? "pause" : "play");
-        $(".tr-btn", tr).setAttribute("aria-label", (on && st.playing ? "Pause " : "Play ") + items[+tr.dataset.k].title);
+        $(".tr-btn", tr).setAttribute("aria-label", T(on && st.playing ? "Pause" : "Play") + " " + items[+tr.dataset.k].title);
         $(".tr-bar i", tr).style.transform = `scaleX(${on && st.d ? st.t / st.d : 0})`;
       });
     });

@@ -240,7 +240,7 @@
   DS.toast = (msg) => {
     let t = DS.$(".toast");
     if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
-    t.innerHTML = DS.icon("check") + "<span>" + DS.esc(msg) + "</span>";
+    t.innerHTML = DS.icon("check") + "<span>" + DS.esc(DS.T ? DS.T(msg) : msg) + "</span>";
     t.classList.add("on"); clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove("on"), 2400);
   };
