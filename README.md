@@ -28,7 +28,26 @@ then open <http://localhost:8080/>. Press `Ctrl+C` in that window to stop it.
 
 ---
 
-## 2. Publish on GitHub Pages
+## Live site
+
+- Website: **https://danamsukhon-design.github.io/dana-portfolio/**
+- Repository: https://github.com/danamsukhon-design/dana-portfolio
+
+### Publish a change
+After editing anything in this folder, run these three commands in PowerShell, from the `website` folder:
+
+```powershell
+git add -A
+git commit -m "Describe the change"
+git push
+```
+
+GitHub rebuilds the site by itself; the change is live within a minute or two.
+(Git and GitHub CLI are installed on this computer, and the account is already signed in.)
+
+---
+
+## 2. Publish on GitHub Pages (how it was set up)
 
 You only upload the files; GitHub serves them as they are.
 
