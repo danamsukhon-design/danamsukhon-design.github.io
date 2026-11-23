@@ -30,8 +30,8 @@ then open <http://localhost:8080/>. Press `Ctrl+C` in that window to stop it.
 
 ## Live site
 
-- Website: **https://danamsukhon-design.github.io/dana-portfolio/**
-- Repository: https://github.com/danamsukhon-design/dana-portfolio
+- Website: **https://danamsukhon-design.github.io/**
+- Repository: https://github.com/danamsukhon-design/danamsukhon-design.github.io
 
 ### Publish a change
 After editing anything in this folder, run these three commands in PowerShell, from the `website` folder:
