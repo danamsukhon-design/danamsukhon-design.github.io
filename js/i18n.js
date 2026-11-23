@@ -1,16 +1,16 @@
 /* i18n.js - English / Arabic.
-   The language comes from ?lang=ar|en in the address, else the visitor's last choice, else English.
+   English is the main language; ?lang=ar in the address shows the Arabic version.
    In Arabic the page turns right-to-left, the content in data.js is swapped for its translation
    (js/i18n-data.js, keyed by the exact English text), and interface words come from UI below.
    Anything without a translation simply stays in English.                                   */
 (function () {
   const DS = (window.DS = window.DS || {});
-  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-  const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 
+  /* English is the main language: the plain address always opens in English, and only ?lang=ar opens Arabic
+     (the language button adds it; moving between pages keeps it, since pages are #hash routes). */
   const q = new URLSearchParams(location.search).get("lang");
-  if (q === "ar" || q === "en") set("ds-lang", q);
-  DS.lang = q === "ar" || q === "en" ? q : get("ds-lang") === "ar" ? "ar" : "en";
+  try { localStorage.removeItem("ds-lang"); } catch (e) {}   /* forget the choice older versions remembered */
+  DS.lang = q === "ar" ? "ar" : "en";
   const AR = DS.lang === "ar";
 
   /* ---------- interface words (English -> Arabic) ---------- */
@@ -162,9 +162,8 @@
     const sk = document.querySelector(".skip"); if (sk) sk.textContent = DICT["Skip to content"];
   }
 
-  /* switch language: remember it, then reload on the same page */
+  /* switch language: reload on the same page, with ?lang=ar for Arabic and the plain address for English */
   DS.setLang = (l) => {
-    set("ds-lang", l);
     const u = new URL(location.href);
     if (l === "ar") u.searchParams.set("lang", "ar"); else u.searchParams.delete("lang");
     location.replace(u.toString());
