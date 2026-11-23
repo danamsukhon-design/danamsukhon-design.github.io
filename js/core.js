@@ -38,9 +38,16 @@
      themselves. The Sound button turns them off, and the choice is remembered. */
   DS.sound = {
     on: DS.store.get("ds-sound") !== "off",
-    ctx: null,
+    volume: 1,          /* overall loudness: raise or lower this one number (0.5 = half, 1.5 = louder) */
+    ctx: null, out: null,
     ensure() {
-      if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; this.ctx = new AC(); }
+      if (!this.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+        const c = (this.ctx = new AC());
+        /* one master level for every sound (levels below are set so nothing goes over full scale) */
+        this.out = c.createGain(); this.out.gain.value = this.volume;
+        this.out.connect(c.destination);
+      }
       if (this.ctx.state === "suspended") this.ctx.resume();
       return this.ctx;
     },
@@ -48,18 +55,19 @@
       const c = this.ensure(); if (!c) return;
       const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
       o.type = type; o.frequency.setValueAtTime(freq, t); o.frequency.exponentialRampToValueAtTime(to, t + dur * 0.8);
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(this.out); o.start(t); o.stop(t + dur + 0.02);
     },
     play(kind) {
       if (!this.on) return;
       try {
-        if (kind === "tick") { this.blip(1500, 900, 0.08, 0.11); this.blip(3000, 2600, 0.03, 0.03, "triangle"); }
-        else if (kind === "soft") this.blip(2100, 1700, 0.05, 0.05);
-        else if (kind === "open") { this.blip(660, 660, 0.18, 0.07); this.blip(990, 990, 0.24, 0.05, "sine", 0.06); }
-        else if (kind === "close") this.blip(880, 520, 0.12, 0.07);
-        else if (kind === "page") this.whoosh(0.55, 300, 2400, 0.08);
-        else if (kind === "turn") this.whoosh(0.22, 900, 3200, 0.06);
+        /* the click: a warm body + a bright tap on top, so it is heard clearly on laptop and phone speakers */
+        if (kind === "tick") { this.blip(1100, 620, 0.11, 0.62); this.blip(2400, 1900, 0.04, 0.26, "triangle"); }
+        else if (kind === "soft") { this.blip(1700, 1200, 0.07, 0.55); }
+        else if (kind === "open") { this.blip(660, 660, 0.2, 0.5); this.blip(990, 990, 0.26, 0.4, "sine", 0.06); }
+        else if (kind === "close") this.blip(880, 480, 0.14, 0.7);
+        else if (kind === "page") this.whoosh(0.55, 300, 2400, 2.2);
+        else if (kind === "turn") this.whoosh(0.24, 900, 3200, 1.8);
       } catch (e) {}
     },
     whoosh(dur = 0.55, f0 = 300, f1 = 2400, vol = 0.045) {
@@ -70,7 +78,7 @@
       src.buffer = buf; f.type = "bandpass"; f.Q.value = 1.2;
       f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.7);
       g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + dur * 0.3); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      src.connect(f).connect(g).connect(c.destination); src.start(t);
+      src.connect(f).connect(g).connect(this.out); src.start(t);
     },
     toggle() {
       this.on = !this.on; DS.store.set("ds-sound", this.on ? "on" : "off");
