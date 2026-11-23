@@ -33,9 +33,11 @@
     return `<img ${src} width="${w}" height="${h}" alt="${DS.esc(o.alt || "")}" ${o.eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"${o.cls ? ` class="${o.cls}"` : ""}${o.attrs ? " " + o.attrs : ""}>`;
   };
 
-  /* ---------- sound: tiny synthesised effects, off by default ---------- */
+  /* ---------- sound: tiny synthesised click effects ----------
+     ON by default (Dana's request); they only ever play in answer to a click, never by
+     themselves. The Sound button turns them off, and the choice is remembered. */
   DS.sound = {
-    on: DS.store.get("ds-sound") === "on",
+    on: DS.store.get("ds-sound") !== "off",
     ctx: null,
     ensure() {
       if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; this.ctx = new AC(); }
@@ -52,12 +54,12 @@
     play(kind) {
       if (!this.on) return;
       try {
-        if (kind === "tick") this.blip(1400, 820, 0.07, 0.045);
-        else if (kind === "soft") this.blip(2100, 1800, 0.04, 0.018);
-        else if (kind === "open") { this.blip(660, 660, 0.18, 0.035); this.blip(990, 990, 0.24, 0.025, "sine", 0.06); }
-        else if (kind === "close") this.blip(880, 520, 0.12, 0.03);
-        else if (kind === "page") this.whoosh();
-        else if (kind === "turn") this.whoosh(0.22, 900, 3200, 0.03);
+        if (kind === "tick") { this.blip(1500, 900, 0.08, 0.11); this.blip(3000, 2600, 0.03, 0.03, "triangle"); }
+        else if (kind === "soft") this.blip(2100, 1700, 0.05, 0.05);
+        else if (kind === "open") { this.blip(660, 660, 0.18, 0.07); this.blip(990, 990, 0.24, 0.05, "sine", 0.06); }
+        else if (kind === "close") this.blip(880, 520, 0.12, 0.07);
+        else if (kind === "page") this.whoosh(0.55, 300, 2400, 0.08);
+        else if (kind === "turn") this.whoosh(0.22, 900, 3200, 0.06);
       } catch (e) {}
     },
     whoosh(dur = 0.55, f0 = 300, f1 = 2400, vol = 0.045) {
@@ -76,11 +78,11 @@
       document.dispatchEvent(new CustomEvent("ds:sound", { detail: this.on }));
     },
   };
-  /* a soft tick on any element marked data-sfx, and on main buttons */
+  /* a click sound on every button and link (data-sfx="none" keeps one silent) */
   document.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-sfx], .btn, .chip-btn, .tab");
-    if (el) DS.sound.play(el.dataset.sfx || "tick");
-  });
+    const el = e.target.closest("[data-sfx], a[href], button, [role=button], [role=option], .chip-btn, .tab");
+    if (el && !el.disabled) DS.sound.play(el.dataset.sfx || "tick");
+  }, true);
 
   /* ---------- custom cursor (desktop only) ---------- */
   DS.cursor = {
