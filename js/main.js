@@ -294,4 +294,23 @@
       setTimeout(() => { pre.classList.add("done"); ready(); setTimeout(() => pre.remove(), 1000); }, 200);
     });
   }
+
+  /* ---------- always show the newest version ----------
+     GitHub Pages lets a browser reuse a saved copy of the page for 10 minutes, so after a publish
+     a visitor could still see the old site. On every visit, ask the server for the page (cheap:
+     it answers "unchanged" when nothing changed) and, if it carries a newer version stamp than
+     the one running, reload once.                                                              */
+  (function () {
+    const running = ((document.querySelector('script[src*="main.js"]') || {}).src || "").match(/[?&]v=(\d+)/);
+    if (!running || !window.fetch) return;
+    fetch(location.pathname, { cache: "no-cache" })
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((html) => {
+        const latest = html.match(/main\.js\?v=(\d+)/);
+        if (!latest || latest[1] === running[1]) return;
+        try { if (sessionStorage.getItem("ds-upd") === latest[1]) return; sessionStorage.setItem("ds-upd", latest[1]); } catch (e) {}
+        location.reload();
+      })
+      .catch(() => {});
+  })();
 })();
