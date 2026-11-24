@@ -127,7 +127,6 @@ window.IMG_DIMS = {
   "social-media/post-11.jpg": [960, 1200],
   "social-media/post-12.jpg": [960, 1200],
   "social-media/post-13.jpg": [960, 1200],
-  "video-thumbnails/book-trailer.jpg": [1280, 720],
   "video-thumbnails/cinematic-short.jpg": [848, 478],
   "video-thumbnails/close-up-portrait.jpg": [640, 360],
   "video-thumbnails/i-like-to-paint.jpg": [638, 360],

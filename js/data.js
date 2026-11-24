@@ -313,14 +313,13 @@ window.SITE = {
        r = width / height.  Names marked "temporary" still need real titles. */
     {
       id: "video", title: "Video", unit: "videos", icon: "film", acc: "#702C3A", dark: true,
-      kicker: "Animation, trailers & reports",
-      short: "Animated English lessons, a book trailer, a report, and unedited animated scenes.",
-      lead: "Animated English lessons, a book trailer and a report, edited and produced end to end, plus single animated scenes before editing.",
-      cover: "video-thumbnails/book-trailer.jpg",
+      kicker: "Animation & reports",
+      short: "Animated English lessons, a report, and unedited animated scenes.",
+      lead: "Animated English lessons and a report, edited and produced end to end, plus single animated scenes before editing.",
+      cover: "video-thumbnails/scene-05.jpg",
       sets: [
-        { title: "Animation, Trailers & Reports", layout: "cinema",
+        { title: "Animation & Reports", layout: "cinema",
           items: [
-            { drive: "1yUAr2GfPofWguuGrP8VQH6TDFVHeHseX", file: "assets/videos/book-trailer.mp4", title: "Book Trailer",      kind: "Trailer",      thumb: "video-thumbnails/book-trailer.jpg",         r: 1.777 },
             { drive: "1NAqBkJtc5OnOXqcb3Q3_Z6B2Un1d4yVS", file: "assets/videos/its-an-elephant.mp4", title: "It’s an Elephant!", kind: "Animation",    thumb: "video-thumbnails/its-an-elephant.jpg",      r: 1.772 },
             { drive: "1cqkNnMOzs-g3PpMzDtnJNYU4Pbi4AzGr", file: "assets/videos/i-like-to-paint.mp4", title: "I Like to Paint",   kind: "Animation",    thumb: "video-thumbnails/i-like-to-paint.jpg",      r: 1.772 },
             { drive: "1NFhj3f0x6rDHLdM4cs8fTKMsUo7AO9G6", file: "assets/videos/report-thawi-al-himam.mp4", title: "ذوي الهمم",         kind: "Report",       thumb: "video-thumbnails/thawi-al-himam.jpg",       r: 1.777 },

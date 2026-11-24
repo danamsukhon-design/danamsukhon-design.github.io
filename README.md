@@ -7,7 +7,7 @@ headlines and Manrope text, and a different interface for each discipline.
 - **No build step, no dependencies.** Plain HTML, CSS and JavaScript. Open `index.html` or put
   the folder on GitHub Pages; there is nothing to install or compile.
 - **All content in one file:** `js/data.js` (text, links, every artwork, video and song).
-- **156 pieces**, each shown once, in this order: 44 AI images, 12 characters, 8 character model sheets, 23 posts, 17 videos (9 edited + 8 unedited scenes), 11 songs, 24 book pages (6 per book), 4 posters, 2 Kufi prints, 8 newspaper pages, 3 published articles
+- **155 pieces**, each shown once, in this order: 44 AI images, 12 characters, 8 character model sheets, 23 posts, 16 videos (8 edited + 8 unedited scenes), 11 songs, 24 book pages (6 per book), 4 posters, 2 Kufi prints, 8 newspaper pages, 3 published articles
   (the order of the categories in `js/data.js` is the order everywhere on the site)
   (4 collections + 4 prompt examples), 9 videos, 11 songs.
 

@@ -45,9 +45,9 @@ temporary label until the real item arrives. Each fix is a one-line change in `j
 
 ## Deliberate choices (not missing)
 - **No book names anywhere**, as Dana asked: no covers, no book or series titles in the text
-  or captions, and neutral file names (`book1…book5`, `post-01…13`, `book-trailer.jpg`).
-  The books are labelled by type (Pupil's Book & Workbook, Reading Book, Grade 5 Workbook, Level 4 Speaking Book),
-  and the first video is titled "Book Trailer". Book names printed inside the artwork itself are part of the design.
+  or captions, and neutral file names (`book1…book5`, `post-01…13`).
+  The books are labelled by type (Pupil's Book & Workbook, Reading Book, Grade 5 Workbook, Level 4 Speaking Book).
+  The book trailer video was removed at Dana's request. Book names printed inside the artwork itself are part of the design.
 - The client name "Redwan Publishing House" is still shown on the Social Media page, as in the PDF.
   Set `client: ""` in `js/data.js` to hide it.
 - The **4 prompt examples** (one per style) appear in the AI Images "Prompt lab" with their
