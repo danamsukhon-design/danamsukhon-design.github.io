@@ -256,6 +256,11 @@
       }
       case "newspaper": return `<div class="cv cv-news">${w.cover.map((src, j) => `<span class="cv-np np${j}">${im(src, "(max-width:760px) 45vw, 22vw")}</span>`).join("")}</div>`;
       case "posters": return `<div class="cv cv-posters">${w.cover.map((src, j) => `<span class="cv-pst pf${j}">${im(src, "(max-width:760px) 40vw, 14vw")}</span>`).join("")}</div>`;
+      /* covers: up to three covers standing on a ledge (one alone stands in the middle) */
+      case "covers": {
+        const cls = (src) => { const k = find(src).kind; return k === "book" ? "is-book" : k === "set" ? "is-set" : "is-card"; };
+        return `<div class="cv cv-covers${w.cover.length === 1 ? " solo" : ""}${["trio", "row", "vhs"].includes(w.sets[0].layout) && w.cover.length === 3 ? " cv-trio" : w.sets[0].layout === "pair" ? " cv-pair" : ""}">${w.cover.map((src, j) => `<span class="cv-cov cc${j} ${cls(src)}${DS.ratio(src) > 1 ? " land" : ""}" style="--r:${DS.ratio(src).toFixed(3)}">${im(src, "(max-width:760px) 60vw, 24vw")}</span>`).join("")}<span class="cv-ledge"></span></div>`;
+      }
       case "kufi": {
         const items = w.sets[0].items;
         return `<div class="cv cv-kufi">${items.slice(0, 2).map((it, j) => `<span class="cv-poster k${j}">${DS.img(it.src, { alt: it.alt, sizes: "(max-width:760px) 40vw, 18vw" })}</span>`).join("")}</div>`;
@@ -814,6 +819,358 @@
         </li>`).join("")}
       </ol>
     </section>`;
+  };
+
+  /* ---------------- COVERS: a shelf of covers; the one in front opens full size ----------------
+     Flash cards (landscape) are shown as a box with cards behind it, books (portrait) with a spine and pages. */
+  BODY.covers = (w) => {
+    const s = w.sets[0], many = s.items.length > 1;
+    group("covers-0", s.items, w.title);
+    const kind = (it) => (it.kind === "book" ? "is-book" : it.kind === "set" ? "is-set" : "is-card");
+    /* "trio": three books standing side by side, book 1 in the middle; "pair": two covers side by side.
+       Each is a closed 3D object you can turn by dragging (it never opens):
+       a hardcover book = front and back boards (with board edges), a rounded spine with the title, and the page block
+       showing on the fore-edge, top and bottom; a flash-card box = the same box in white card with a coloured spine.
+       spine = the spine colour (from the cover). */
+    /* "vhs": a shelf of covers standing spine out; the one in the middle is pulled out and turned to show its cover.
+       Each is a box: spine in front, cover on its right side, back cover on its left, page edges behind, a top.
+       Everything moves in DS.init.covers (one animation loop); the detail page is made there too. */
+    if (s.layout === "vhs") {
+      const kinds = [...new Set(s.items.map((it) => it.kind))];
+      const kindName = (k) => T(k === "cards" ? "Flash cards" : "Phonics books");
+      return `
+    <section class="block cover-room cs-room" id="set-covers-0">
+      <div class="wrap">${setHead(T("The covers"), s, "covers")}</div>
+      <div class="cs3" data-cs3>
+        <nav class="cs-tabs lblx" aria-label="${T("Kinds of cover")}" dir="ltr">
+          <span class="cs-ind" aria-hidden="true"></span>
+          <button class="cs-tab" data-kind="">${T("All")}</button>
+          ${kinds.map((k) => `<button class="cs-tab" data-kind="${k}">${kindName(k)}</button>`).join("")}
+        </nav>
+        <div class="cs-view" tabindex="0" aria-label="${T("Covers shelf")}">
+          <div class="cs-stage" dir="ltr">
+            ${s.items.map((it, k) => `
+            <div class="tp k-${it.kind}" data-i="${k}" style="--sp:${it.spine || "#5B2CA8"};--r:${DS.ratio(it.src).toFixed(4)}">
+              <button class="tp-f tp-sp" tabindex="-1" data-cursor="${T("Show")}" aria-label="${esc(t(it.title))}">
+                <i class="tp-lv">${it.level || ""}</i><span class="tp-tw"><b class="tp-t">${t(it.spineTitle || it.title)}</b></span><span class="tp-by">Dana Sukhon</span>
+              </button>
+              <button class="tp-f tp-cv" tabindex="-1" data-cursor="${T("Open")}" aria-label="${T("Open cover")}: ${esc(it.alt)}">
+                ${DS.img(it.src, { alt: "", sizes: "(max-width: 760px) 70vw, 34vw" })}
+              </button>
+              <span class="tp-f tp-bk" aria-hidden="true"></span>
+              <span class="tp-f tp-pg" aria-hidden="true"></span>
+              <span class="tp-f tp-tp" aria-hidden="true"></span>
+            </div>`).join("")}
+          </div>
+        </div>
+        <button class="cs-play" aria-label="${T("Open cover")}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" fill="currentColor"/></svg></button>
+        <div class="cs-cap" aria-live="polite">
+          <div class="cs-mask cs-ti"></div>
+          <div class="cs-mask cs-su"></div>
+          <div class="cs-mask cs-no"></div>
+        </div>
+        <button class="cs-arrow cs-prev" aria-label="${T("Previous cover")}"><svg viewBox="0 0 18 10" aria-hidden="true"><path d="M5 1 1 5l4 4M1 5h16" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
+        <button class="cs-arrow cs-next" aria-label="${T("Next cover")}"><svg viewBox="0 0 18 10" aria-hidden="true"><path d="M13 1l4 4-4 4M17 5H1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
+        <span class="cs-grain" aria-hidden="true"></span>
+      </div>
+      <p class="prints-hint">${icon("expand")}<span class="hint-fine">${T("Drag the shelf, click a spine or use the arrows. Click the cover in front to see it full size.")}</span><span class="hint-touch">${T("Swipe the shelf or tap a spine. Tap the cover in front to see it full size.")}</span></p>
+    </section>`;
+    }
+    /* "row": any number side by side, turned like a fan (the first faces right, the last faces left) */
+    const fan = (k) => (s.layout === "row" && s.items.length > 1 ? `;--ry:${Math.round(-24 + (48 * k) / (s.items.length - 1))}deg` : "");
+    if (s.layout === "trio" || s.layout === "pair" || s.layout === "row") return `
+    <section class="block cover-room" id="set-covers-0">
+      <div class="wrap">
+        ${s.layout === "trio" ? setHead(T("The series"), s, "books") : setHead(T("The covers"), s, "covers")}
+        <div class="book-trio ${s.layout}" dir="ltr">
+          ${s.items.map((it, k) => `
+          <figure class="bk-wrap bkw${k + 1} k-${it.kind || "book"}${DS.ratio(it.src) > 1 ? " land" : ""}" data-reveal style="--d:${k}">
+            <button class="book3d" data-turn data-k="${k}" style="--r:${DS.ratio(it.src).toFixed(3)};--sp:${it.spine || "#5B2CA8"}${fan(k)}" data-cursor="${T("Drag")}" aria-label="${esc(it.alt)}. ${T("Drag to turn it around. Click to see the cover full size.")}">
+              <span class="bk-face">${DS.img(it.src, { alt: "", sizes: "(max-width: 760px) 80vw, 36vw" })}</span>
+              <span class="bk-back" aria-hidden="true"></span>
+              <span class="bk-spine" aria-hidden="true"><b>${t(it.title)}</b></span>
+              <span class="bk-pages" aria-hidden="true"></span>
+              <span class="bk-top" aria-hidden="true"></span>
+              <span class="bk-bottom" aria-hidden="true"></span>
+              <span class="bk-edge e-fr" aria-hidden="true"></span><span class="bk-edge e-br" aria-hidden="true"></span>
+              <span class="bk-edge e-ft" aria-hidden="true"></span><span class="bk-edge e-bt" aria-hidden="true"></span>
+              <span class="bk-edge e-fb" aria-hidden="true"></span><span class="bk-edge e-bb" aria-hidden="true"></span>
+            </button>
+            <figcaption><span class="bk-no">${pad(k + 1)}</span>${t(it.title)}</figcaption>
+          </figure>`).join("")}
+        </div>
+        <p class="prints-hint">${icon("expand")}<span class="hint-fine">${T("Drag a cover to turn it and see its spine and pages. Click it to see the cover full size.")}</span><span class="hint-touch">${T("Swipe a cover to turn it. Tap it to see the cover full size.")}</span></p>
+      </div>
+    </section>`;
+    return `
+    <section class="block cover-room" id="set-covers-0">
+      <div class="wrap">
+        ${setHead(T("The covers"), s, "covers")}
+        <div class="shelf${many ? "" : " solo"}" data-shelf tabindex="0"${many ? ` aria-roledescription="carousel" aria-label="${T("Covers. Use the left and right arrow keys to browse.")}"` : ""}>
+          <div class="sh-stage" dir="ltr">
+            ${s.items.map((it, k) => `
+            <button class="sh-big ${kind(it)}" data-k="${k}" style="--r:${DS.ratio(it.src).toFixed(3)}" data-cursor="${T("View")}" aria-label="${esc(it.alt)}" tabindex="-1">
+              <span class="sh-obj">${DS.img(it.src, { alt: "", sizes: "(max-width: 760px) 92vw, 56vw" })}</span>
+            </button>`).join("")}
+          </div>
+          <div class="sh-bar">
+            <div class="sh-cap" aria-live="polite">${many ? `<span class="sh-no"></span>` : ""}<b class="sh-title"></b><span class="sh-note"></span></div>
+            ${many ? `<div class="sh-ctrl" dir="ltr">
+              <button class="round" data-sh="-1" aria-label="${T("Previous cover")}">${icon("arrow-left")}</button>
+              <button class="round" data-sh="1" aria-label="${T("Next cover")}">${icon("arrow-right")}</button>
+            </div>` : ""}
+          </div>
+          ${many ? `<div class="sh-rail" dir="ltr" role="listbox" aria-label="${T("The shelf")}">
+            ${s.items.map((it, k) => `<button class="sh-item ${kind(it)}" role="option" aria-selected="${k === 0}" data-k="${k}" style="--r:${DS.ratio(it.src).toFixed(3)}" aria-label="${esc(t(it.title))}"><img src="${DS.thumb(it.src)}" alt="" loading="lazy" decoding="async"></button>`).join("")}
+          </div>` : ""}
+          <p class="prints-hint">${icon("expand")}<span>${T(many ? "Click the cover in front to see it full size. Pick another from the shelf, or use the arrows." : "Click the picture to see it full size.")}</span></p>
+        </div>
+      </div>
+    </section>`;
+  };
+  /* ---------- the covers shelf ("vhs" layout) ----------
+     One animation loop moves everything. s = where the shelf is (in covers), T = where it is going.
+     Each cover is a box: openness o = 1 for the one in the middle (turned to show its cover), 0 for spines,
+     in between while the shelf slides, so the covers it passes half-turn out and back. */
+  const sstep = (x) => x * x * (3 - 2 * x);
+  function initShelf3d(cs, w, items) {
+    const n = items.length, RM = DS.reduced.matches, EASE = "cubic-bezier(.2,.8,.2,1)";
+    const view = $(".cs-view", cs), tapes = $$(".tp", cs), play = $(".cs-play", cs), tabs = $$(".cs-tab", cs), ind = $(".cs-ind", cs);
+    const cap = { ti: $(".cs-ti", cs), su: $(".cs-su", cs), no: $(".cs-no", cs) };
+    let H = 300, gap = 10, geo = [], unit = 60;
+    let s = 0, T = 0, active = -1, hover = -1, alive = true, isOpen = false, last = performance.now();
+    let mx = -1e5, my = -1e5, tiltX = 0, tiltY = 0, drag = null, suppress = false, wheelT = 0, wasOn = false;
+    const lift = new Array(n).fill(0);
+    const clampT = (v, pad = 0) => Math.max(-pad, Math.min(n - 1 + pad, v));
+
+    /* sizes: every length comes from --H (the height of a cover on the shelf) */
+    const measure = () => {
+      // the shelf view is --H + 90px tall, so its height gives --H in pixels (0 while the page is still hidden)
+      if (view.clientHeight > 90) H = view.clientHeight - 90;
+      gap = H * 0.035;
+      geo = items.map((it) => ({ ws: H * (it.kind === "cards" ? 0.2 : 0.13), d: H * DS.ratio(it.src) }));
+      tapes.forEach((tp, i) => { tp.style.setProperty("--H", `${H}px`); tp.style.setProperty("--ws", `${geo[i].ws}px`); tp.style.setProperty("--d", `${geo[i].d}px`); });
+      unit = geo.reduce((a, g) => a + g.ws, 0) / n + gap;
+      // the spine title: as big as fits between the badge and the name (it runs down the spine, so its height is its length)
+      tapes.forEach((tp, i) => {
+        const tw = $(".tp-tw", tp), b = $(".tp-t", tp);
+        let fs = Math.min(15, geo[i].ws * 0.3);
+        b.style.fontSize = `${fs}px`;
+        while (b.offsetHeight > tw.clientHeight && fs > 6) { fs -= 0.5; b.style.fontSize = `${fs}px`; }
+      });
+      return true;
+    };
+
+    /* the caption: each change slides the old line out of its mask and the new one in */
+    const swap = (el, html, dir) => {
+      const span = document.createElement("span"); span.innerHTML = html;
+      const olds = [...el.children].filter((c) => !c.dataset.leaving);
+      el.appendChild(span);
+      if (RM || !olds.length) { olds.forEach((o) => o.remove()); return; }
+      span.animate([{ transform: `translateY(${dir * 105}%)` }, { transform: "translateY(0)" }], { duration: 650, easing: EASE, fill: "both" });
+      olds.forEach((o) => {
+        o.dataset.leaving = "1";
+        o.animate([{ transform: getComputedStyle(o).transform === "none" ? "translateY(0)" : getComputedStyle(o).transform }, { transform: `translateY(${-dir * 105}%)` }],
+          { duration: 650, easing: EASE, fill: "both" }).onfinish = () => o.remove();
+      });
+    };
+    const kindLabel = (it) => DS.T(it.kind === "cards" ? "Flash cards" : "Phonics books");
+    const setActive = (i, dir) => {
+      if (i === active) return;
+      active = i; const it = items[i];
+      swap(cap.ti, t(it.title), dir);
+      swap(cap.su, `${esc(kindLabel(it))} · ${esc(DS.T(it.note || ""))}`, dir);
+      swap(cap.no, `${pad(i + 1)} / ${pad(n)}`, dir);
+      tapes.forEach((tp, j) => { const cv = $(".tp-cv", tp); cv.dataset.cursor = j === i ? DS.T("Open") : DS.T("Show"); });
+      const on = tabs.find((b) => b.dataset.kind === it.kind) || tabs[0];
+      tabs.forEach((b) => b.classList.toggle("on", b === on));
+      ind.style.width = `${on.offsetWidth}px`; ind.style.transform = `translateX(${on.offsetLeft}px)`;
+    };
+
+    /* ---- the loop ---- */
+    const frame = (now) => {
+      if (!alive) return;
+      if (!document.body.contains(cs)) { alive = false; return; }   // the page was left
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      if (view.clientHeight > 90 && Math.abs(view.clientHeight - 90 - H) > 0.5) measure();   // first show, resize, phone turned
+      const k = RM ? 1e3 : drag && drag.moved ? 18 : 5.2;
+      s += (T - s) * (1 - Math.exp(-k * dt)); if (Math.abs(T - s) < 1e-4) s = T;
+      const r0 = Math.round(Math.max(0, Math.min(n - 1, s)));
+      if (r0 !== active) setActive(r0, Math.sign(T - s) || 1);
+
+      const vr = view.getBoundingClientRect(), cx0 = vr.left + vr.width / 2, cy0 = vr.top + vr.height / 2;
+      const ga = geo[active] || geo[0];
+      const onCover = !isOpen && Math.abs(T - s) < 0.3 && Math.abs(mx - cx0) < 0.55 * ga.d && Math.abs(my - cy0) < 0.55 * H;
+      const tyT = onCover ? ((mx - cx0) / (0.55 * ga.d)) * 9 : mx > -1e4 ? ((mx - cx0) / innerWidth) * 5 : 0;
+      const txT = onCover ? (-(my - cy0) / (H / 2)) * 6 : 0;
+      const kt = RM ? 1 : 1 - Math.exp(-7 * dt);
+      tiltY += (tyT - tiltY) * kt; tiltX += (txT - tiltX) * kt;
+
+      // openness and the width each cover takes on the shelf, then lay them out left to right
+      const o = items.map((_, i) => sstep(Math.max(0, 1 - Math.abs(i - s))));
+      const wv = geo.map((g, i) => g.ws + (g.d - g.ws) * o[i]);
+      const c = [0];
+      for (let i = 1; i < n; i++) c[i] = c[i - 1] + wv[i - 1] / 2 + gap * (1 + 0.9 * (o[i - 1] + o[i])) + wv[i] / 2;
+      const sc = Math.max(0, Math.min(n - 1, s)), i0 = Math.floor(sc), i1 = Math.min(n - 1, i0 + 1);
+      const focus = c[i0] + (c[i1] - c[i0]) * (sc - i0) + (s - sc) * unit;   // past the ends: keeps sliding (rubber band)
+      tapes.forEach((tp, i) => {
+        const r = i - s, oi = o[i];
+        const lt = hover === i && Math.abs(r) > 0.5 ? 1 : 0;
+        lift[i] += (lt - lift[i]) * (RM ? 1 : 1 - Math.exp(-12 * dt));
+        const x = c[i] - focus, y = -oi * 0.025 * H - lift[i] * 0.045 * H, z = oi * 0.2 * H;
+        tp.style.transform = `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,${z.toFixed(2)}px) rotateZ(${(-4.5 * oi).toFixed(3)}deg) rotateX(${(tiltX * oi).toFixed(3)}deg) rotateY(${(-90 * oi + tiltY * oi).toFixed(3)}deg)`;
+        tp.style.zIndex = Math.round(100 - Math.abs(r) * 4);
+        tp.style.setProperty("--ss", (oi * 0.55).toFixed(3));
+        tp.style.setProperty("--cs", ((1 - oi) * 0.5).toFixed(3));
+        tp.classList.toggle("is-on", Math.abs(r) < 0.5);
+      });
+      // the play button sits on the lower left corner of the open cover and pops in once the shelf settles
+      const ps = isOpen ? 0 : sstep(Math.max(0, 1 - Math.abs(T - s) * 3));
+      play.style.left = `${vr.left - cs.getBoundingClientRect().left + vr.width / 2 - 0.5 * ga.d - 6}px`;
+      play.style.top = `${view.offsetTop + view.offsetHeight / 2 + 0.36 * H}px`;
+      play.style.transform = `translate(-50%,-50%) scale(${ps.toFixed(3)})`;
+      if (onCover !== wasOn) {   // the site cursor: "Open" over the open cover, "Drag" elsewhere on the shelf
+        wasOn = onCover; cs.classList.toggle("on-cover", onCover);
+        const cur = document.querySelector(".cursor"), lab = cur && cur.querySelector(".c-label");
+        if (lab && (onCover || cur.classList.contains("label"))) { lab.textContent = onCover ? DS.T("Open") : DS.T("Drag"); cur.classList.add("label"); }
+      }
+      requestAnimationFrame(frame);
+    };
+
+    /* ---- moving the shelf ---- */
+    const go = (v) => { T = clampT(v); };
+    const pointerXY = (e) => { mx = e.clientX; my = e.clientY; };
+    addEventListener("pointermove", (e) => {
+      if (!alive) return;
+      pointerXY(e);
+      if (!drag) return;
+      const dx = e.clientX - drag.x;
+      if (!drag.moved && Math.abs(dx) > 5) { drag.moved = true; cs.classList.add("dragging"); }
+      if (drag.moved) T = clampT(drag.T0 - dx / unit, 0.35);
+    }, { passive: true });
+    view.addEventListener("pointerdown", (e) => { if (e.button || isOpen) return; drag = { x: e.clientX, T0: T, moved: false }; });
+    const endDrag = () => {
+      if (!drag) return;
+      if (drag.moved) { T = clampT(Math.round(T)); suppress = true; setTimeout(() => (suppress = false), 0); DS.sound.play("soft"); }
+      drag = null; cs.classList.remove("dragging");
+    };
+    addEventListener("pointerup", endDrag); addEventListener("pointercancel", endDrag);
+    tapes.forEach((tp, i) => {
+      tp.addEventListener("pointerenter", () => (hover = i));
+      tp.addEventListener("pointerleave", () => { if (hover === i) hover = -1; });
+    });
+    /* clicks: Chrome does not hit-test the turned cover face, so the open cover is found by its place on screen;
+       spines are hit normally */
+    const inCover = (x, y) => { const rc = coverRect(active); return x >= rc.left && x <= rc.right && y >= rc.top && y <= rc.bottom; };
+    view.addEventListener("click", (e) => {
+      if (suppress) return;
+      if (inCover(e.clientX, e.clientY)) { open(active); return; }
+      const hit = e.target.closest(".tp");
+      if (hit) { go(+hit.dataset.i); DS.sound.play("soft"); }
+    });
+    view.dataset.cursor = DS.T("Drag");
+    $(".cs-prev", cs).addEventListener("click", () => go(Math.round(T) - 1));
+    $(".cs-next", cs).addEventListener("click", () => go(Math.round(T) + 1));
+    play.addEventListener("click", () => open(active));
+    tabs.forEach((b) => b.addEventListener("click", () => {
+      const k = b.dataset.kind, i = k ? items.findIndex((it) => it.kind === k) : 0;
+      if (i >= 0) go(i);
+    }));
+    view.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") { e.preventDefault(); go(Math.round(T) + 1); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); go(Math.round(T) - 1); }
+      if (e.key === "Enter") { e.preventDefault(); open(active); }
+    });
+    // a sideways swipe on a trackpad slides the shelf; an up-down scroll still scrolls the page
+    view.addEventListener("wheel", (e) => {
+      if (isOpen || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      T = clampT(T + (e.deltaX / unit) * 0.5, 0.35);
+      clearTimeout(wheelT); wheelT = setTimeout(() => (T = clampT(Math.round(T))), 160);
+    }, { passive: false });
+    addEventListener("resize", () => { if (alive) measure(); });
+
+    /* ---- clicking the cover in front shows it full size in the site's own viewer (no page of its own:
+       Dana, "ما تخليني ادخل جوا بكبسة ... عشان اشوف الكفر") ---- */
+    const coverRect = (i) => $(".tp-cv", tapes[i]).getBoundingClientRect();
+    function open(i) {
+      T = Math.round(T);
+      DS.lightbox.open(DS.groups["covers-0"].items, i, $(".tp-cv", tapes[i]), { label: w.title });
+    }
+
+    measure();
+    T = s = 1;                     // open on the first phonics book
+    setActive(1, 1);
+    requestAnimationFrame(frame);
+  }
+
+  DS.init.covers = (root) => {
+    const w = S().work.find((x) => x.id === "covers"), items = w.sets[0].items;
+    const cs3 = $("[data-cs3]", root);
+    if (cs3) initShelf3d(cs3, w, items);
+    /* closed books / boxes: drag to turn them all the way round (and tilt a little); a click without dragging opens the cover */
+    $$("[data-turn]", root).forEach((b) => {
+      const base = parseFloat(getComputedStyle(b).getPropertyValue("--ry")) || 0;
+      let ry = base, rx = 0, start = null, moved = false;
+      const set = () => { b.style.setProperty("--ry", `${ry}deg`); b.style.setProperty("--rx", `${rx}deg`); };
+      b.addEventListener("pointerdown", (e) => {
+        if (e.button) return;
+        if (e.pointerType === "mouse") { e.preventDefault(); b.focus({ preventScroll: true }); }   // no text selection while turning
+        start = { x: e.clientX, y: e.clientY, ry, rx }; moved = false;
+        b.setPointerCapture(e.pointerId); b.classList.add("turning");
+      });
+      b.addEventListener("pointermove", (e) => {
+        if (!start) return;
+        const dx = e.clientX - start.x, dy = e.clientY - start.y;
+        if (!moved && Math.hypot(dx, dy) < 6) return;
+        moved = true;
+        ry = start.ry + dx * 0.55;
+        rx = Math.max(-35, Math.min(35, start.rx - dy * 0.3));
+        set();
+      });
+      const end = () => { if (!start) return; start = null; b.classList.remove("turning"); if (moved) DS.sound.play("soft"); };
+      b.addEventListener("pointerup", end);
+      b.addEventListener("pointercancel", end);
+      b.addEventListener("click", (e) => {
+        if (moved) { moved = false; e.preventDefault(); return; }
+        DS.lightbox.open(DS.groups["covers-0"].items, +b.dataset.k, b, { label: w.title });
+      });
+      b.addEventListener("keydown", (e) => {
+        const step = { ArrowLeft: [-30, 0], ArrowRight: [30, 0], ArrowUp: [0, 12], ArrowDown: [0, -12] }[e.key];
+        if (!step) return;
+        e.preventDefault(); ry += step[0]; rx = Math.max(-35, Math.min(35, rx + step[1])); set();
+      });
+      b.addEventListener("dblclick", () => { ry = base; rx = 0; set(); });   // back to the start
+    });
+    const sh = $("[data-shelf]", root); if (!sh) return;
+    const bigs = $$(".sh-big", sh), cards = $$(".sh-item", sh), btns = $$("[data-sh]", sh);
+    let i = 0;
+    const show = (k, sound = true) => {
+      const n = (k + items.length) % items.length;
+      if (sound && n !== i) DS.sound.play("soft");
+      i = n;
+      bigs.forEach((b, j) => { b.classList.toggle("on", j === i); b.tabIndex = j === i ? 0 : -1; });
+      cards.forEach((c, j) => c.setAttribute("aria-selected", j === i));
+      const it = items[i], no = $(".sh-no", sh);
+      if (no) no.textContent = `${T("No.")} ${pad(i + 1)} / ${pad(items.length)}`;
+      $(".sh-title", sh).innerHTML = t(it.title);
+      $(".sh-note", sh).textContent = `${T(it.kind === "book" ? "Book cover" : it.kind === "set" ? "Book covers" : "Flash cards")} · ${T(it.note || "")}`;
+    };
+    bigs.forEach((b) => b.addEventListener("click", () => DS.lightbox.open(DS.groups["covers-0"].items, i, b, { label: w.title })));
+    cards.forEach((c) => c.addEventListener("click", () => show(+c.dataset.k)));
+    btns.forEach((b) => b.addEventListener("click", () => show(i + +b.dataset.sh)));
+    sh.addEventListener("keydown", (e) => {
+      if (e.target.closest(".sh-rail") && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+        e.preventDefault(); show(i + (e.key === "ArrowRight" ? 1 : -1)); cards[i].focus(); return;
+      }
+      if (e.key === "ArrowRight") { e.preventDefault(); show(i + 1); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); show(i - 1); }
+    });
+    let sx = null;
+    const stage = $(".sh-stage", sh);
+    stage.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") sx = e.clientX; });
+    stage.addEventListener("pointerup", (e) => { if (sx == null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) show(i + (dx < 0 ? 1 : -1)); });
+    show(0, false);
   };
 
   /* ---------------- POSTERS: a 3D carousel, the front poster opens full size ---------------- */

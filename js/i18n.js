@@ -69,6 +69,21 @@
     "Read": "اقرأ", "Date to come": "سيُضاف التاريخ لاحقًا", "Read the article on": "اقرأ المقال على", "(opens in a new tab)": "(يُفتح في نافذة جديدة)",
     "Posters. Use the left and right arrow keys to browse.": "الملصقات. تصفّحها بالسهمين الأيمن والأيسر.",
     "Previous poster": "الملصق السابق", "Next poster": "الملصق التالي", "Show": "اعرض",
+    "The covers": "الأغلفة", "Previous cover": "الغلاف السابق", "Next cover": "الغلاف التالي",
+    "Flash cards": "بطاقات تعليمية", "Book cover": "غلاف كتاب", "Book covers": "أغلفة كتب", "The shelf": "الرف",
+    "Click the picture to see it full size.": "اضغط على الصورة لتراها بالحجم الكامل.",
+    "The series": "السلسلة", "Click a book to see its cover full size.": "اضغط على أي كتاب لترى غلافه بالحجم الكامل.",
+    "Click a cover to see it full size.": "اضغط على أي غلاف لتراه بالحجم الكامل.",
+    "All": "الكل", "Phonics books": "كتب صوتيات", "Kinds of cover": "أنواع الأغلفة", "Covers shelf": "رف الأغلفة",
+    "Open cover": "افتح الغلاف", "Cover design": "تصميم غلاف", "For children": "للأطفال",
+    "Designed by Dana Sukhon.": "من تصميم دانا السخن.", "See it full size": "شاهده بالحجم الكامل",
+    "Drag the shelf, click a spine or use the arrows. Click the cover in front to see it full size.": "اسحب الرف أو اضغط على أي كعب أو استخدم الأسهم، واضغط على الغلاف في المقدمة لتراه بالحجم الكامل.",
+    "Swipe the shelf or tap a spine. Tap the cover in front to see it full size.": "اسحب الرف بإصبعك أو اضغط على أي كعب، واضغط على الغلاف في المقدمة لتراه بالحجم الكامل.",
+    "Drag to turn it around. Click to see the cover full size.": "اسحبه لتدويره، واضغط لرؤية الغلاف بالحجم الكامل.",
+    "Drag a cover to turn it and see its spine and pages. Click it to see the cover full size.": "اسحب أي غلاف لتدويره وترى كعبه وصفحاته، واضغط عليه لترى الغلاف بالحجم الكامل.",
+    "Swipe a cover to turn it. Tap it to see the cover full size.": "اسحب الغلاف بإصبعك لتدويره، واضغط عليه لتراه بالحجم الكامل.",
+    "Covers. Use the left and right arrow keys to browse.": "الأغلفة. تصفّحها بالسهمين الأيمن والأيسر.",
+    "Click the cover in front to see it full size. Pick another from the shelf, or use the arrows.": "اضغط على الغلاف في الواجهة لتراه بالحجم الكامل، واختر غلافًا آخر من الرف أو تنقّل بالأسهم.",
     "Click the poster in front to see it full size. Use the arrows, the arrow keys or a swipe to browse.": "اضغط على الملصق في المقدمة لتراه بالحجم الكامل، وتنقّل بين الملصقات بالأسهم أو بلوحة المفاتيح أو بالسحب.",
     "See print": "اعرض اللوحة",
     "Move over a print to look closely at the grid. Click to open it full size.": "مرّر المؤشر فوق اللوحة لتتأمل شبكتها عن قرب، واضغط لفتحها بالحجم الكامل.",
@@ -112,6 +127,7 @@
   const UNITS = {
     pages: ["صفحة", "صفحات", "صفحتان", "صفحة"], posts: ["منشور", "منشورات", "منشوران", "منشورًا"],
     posters: ["ملصق", "ملصقات", "ملصقان", "ملصقًا"], prints: ["لوحة", "لوحات", "لوحتان", "لوحة"],
+    covers: ["غلاف", "أغلفة", "غلافان", "غلافًا"],
     illustrations: ["رسمة", "رسوم", "رسمتان", "رسمة"], images: ["صورة", "صور", "صورتان", "صورة"],
     sheets: ["لوحة", "لوحات", "لوحتان", "لوحة"], videos: ["فيديو", "فيديوهات", "فيديوان", "فيديو"],
     songs: ["أغنية", "أغانٍ", "أغنيتان", "أغنية"], tracks: ["أغنية", "أغانٍ", "أغنيتان", "أغنية"],
@@ -128,9 +144,11 @@
   /* "one" after the noun; a phrase like "مشهد قبل المونتاج" takes it after the first word */
   const one = (u) => { const f = UNITS[u][0], w = F.has(u) ? "واحدة" : "واحد", i = f.indexOf(" "); return i < 0 ? `${f} ${w}` : `${f.slice(0, i)} ${w}${f.slice(i)}`; };
   /* the word after a number shown separately (e.g. "24" big + "pages" small) */
-  DS.unitLabel = (n, u) => (AR ? arForm(n, u) || u : u);
+  /* English singular for one item: "1 cover", not "1 covers" */
+  const enForm = (n, u) => (n === 1 && /[^s]s$/.test(u) && u !== "series" ? u.slice(0, -1) : u);
+  DS.unitLabel = (n, u) => (AR ? arForm(n, u) || u : enForm(n, u));
   /* "24 pages" */
-  DS.units = (n, u) => { if (!AR) return `${n} ${u}`; const f = arForm(n, u); if (!f) return `${n} ${u}`; return n === 2 ? f : n === 1 ? one(u) : `${n} ${f}`; };
+  DS.units = (n, u) => { if (!AR) return `${n} ${enForm(n, u)}`; const f = arForm(n, u); if (!f) return `${n} ${u}`; return n === 2 ? f : n === 1 ? one(u) : `${n} ${f}`; };
   /* label above a number in the facts box ("PAGES 24") */
   DS.factLabel = (u) => (AR && UNITS[u] ? UNITS[u][1] : u);
 

@@ -960,6 +960,261 @@ li:hover > .ic.draw path, li:hover > .ic.draw circle, li:hover > .ic.draw rect,
 .cf-note { font: 600 .7rem/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
 .cf-ctrl { display: flex; gap: .6rem; }
 
+/* ---------- covers: a shelf, the chosen cover in front ---------- */
+.cover-room { overflow: hidden; background: radial-gradient(120% 80% at 50% 30%, color-mix(in srgb, var(--acc) 9%, var(--ivory)), color-mix(in srgb, var(--acc) 20%, var(--ivory-2))); }
+.shelf { outline-offset: 8px; }
+.sh-stage { position: relative; height: clamp(300px, 58vh, 620px); margin: 1.4rem 0 2.2rem; container-type: size; touch-action: pan-y; }
+.sh-stage::after { content: ""; position: absolute; left: 24%; right: 24%; bottom: -20px; height: 40px; background: radial-gradient(closest-side, rgba(41, 37, 34, .2), transparent); pointer-events: none; }
+.sh-big { position: absolute; inset: 0; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: zoom-in;
+  opacity: 0; visibility: hidden; transform: translateY(20px) scale(.95); transition: opacity .5s var(--ease), transform .8s var(--ease), visibility 0s .5s; }
+.sh-big.on { opacity: 1; visibility: visible; transform: none; transition: opacity .5s var(--ease), transform .8s var(--ease); }
+.sh-obj { position: relative; display: block; isolation: isolate; aspect-ratio: var(--r);
+  width: min(calc(100cqw - 56px), calc((100cqh - 34px) * var(--r))); }
+.sh-obj img { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: cover; }
+/* flash cards: the box in front, two cards peeking out behind it */
+.sh-big.is-card .sh-obj img { border-radius: 14px; box-shadow: 0 44px 60px -34px rgba(41, 37, 34, .62); }
+.sh-big.is-card .sh-obj::before, .sh-big.is-card .sh-obj::after { content: ""; position: absolute; inset: 0; border-radius: 14px; box-shadow: 0 12px 26px -14px rgba(41, 37, 34, .45); transition: transform .9s var(--ease); }
+.sh-big.is-card .sh-obj::before { z-index: 0; background: color-mix(in srgb, var(--acc) 12%, #fff); transform: translate(14px, -12px) rotate(2deg); }
+.sh-big.is-card .sh-obj::after { z-index: -1; background: color-mix(in srgb, var(--acc) 26%, #fff); transform: translate(26px, -22px) rotate(4deg); }
+.sh-big.is-card:hover .sh-obj::before { transform: translate(22px, -18px) rotate(3.5deg); }
+.sh-big.is-card:hover .sh-obj::after { transform: translate(40px, -32px) rotate(7deg); }
+/* books: a spine fold on the left, the page block on the right, turned a little */
+.sh-big.is-book .sh-obj { transform: perspective(1700px) rotateY(-11deg); transform-origin: left center; transition: transform .9s var(--ease); }
+.sh-big.is-book:hover .sh-obj { transform: perspective(1700px) rotateY(-3deg); }
+.sh-big.is-book .sh-obj img { border-radius: 3px 8px 8px 3px; box-shadow: 0 46px 60px -34px rgba(41, 37, 34, .62); }
+.sh-big.is-book .sh-obj::before { content: ""; position: absolute; inset: 0 auto 0 0; z-index: 2; width: 6%; border-radius: 3px 0 0 3px; pointer-events: none;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .3), rgba(255, 255, 255, .24) 40%, rgba(0, 0, 0, .1) 72%, transparent); }
+.sh-big.is-book .sh-obj::after { content: ""; position: absolute; top: 1.4%; bottom: 1.4%; right: -13px; z-index: 0; width: 16px; border-radius: 0 6px 6px 0;
+  background: repeating-linear-gradient(90deg, #FBF8F3 0 2px, #E6DFD4 2px 3px); box-shadow: 0 30px 40px -26px rgba(41, 37, 34, .5); }
+/* ---------- covers "vhs" shelf: spines out, the middle one pulled out and turned to show its cover ----------
+   --H = the height of a cover; every size on the shelf follows from it (the script measures it). */
+.cs-room { overflow: hidden; background: color-mix(in srgb, var(--acc) 5%, #EDE8E1); }
+.cs3 { --H: min(44vh, 30vw); position: relative; padding: 1rem 0 0; -webkit-user-select: none; user-select: none; }
+.cs-box { display: inline-flex; align-items: center; gap: .5rem; height: 32px; padding: 0 14px; border: 1px solid rgba(41, 37, 34, .85); background: none; color: var(--ink);
+  font: 600 .66rem/1 var(--sans); letter-spacing: .09em; text-transform: uppercase; cursor: pointer; }
+.cs-box .ic { width: 14px; height: 14px; }
+/* kind tabs: boxed labels sharing borders, an accent block slides behind the one in use */
+.cs-tabs { position: relative; display: flex; justify-content: center; width: max-content; margin: 0 auto 1.2rem; isolation: isolate; }
+.cs-tab { position: relative; height: 28px; padding: 0 13px; margin-left: -1px; border: 1px solid rgba(41, 37, 34, .85); background: none; color: var(--ink); cursor: pointer;
+  font: 600 .64rem/1 var(--sans); letter-spacing: .09em; text-transform: uppercase; white-space: nowrap; transition: color .45s var(--ease); }
+.cs-tab.on { color: #fff; }
+.cs-ind { position: absolute; left: 0; top: 0; z-index: -1; height: 28px; margin-left: -1px; background: var(--acc); transition: width .6s var(--ease), transform .6s var(--ease); }
+/* the shelf */
+.cs-view { position: relative; height: calc(var(--H) + 90px); perspective: 2200px; perspective-origin: 50% 50%; touch-action: pan-y; outline-offset: -6px; cursor: grab; }
+.cs3.dragging .cs-view { cursor: grabbing; }
+.cs-stage { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+.tp { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; will-change: transform; }
+.tp-f { position: absolute; top: calc(var(--H) / -2); height: var(--H); padding: 0; border: 0; border-radius: 2px; backface-visibility: hidden; overflow: hidden; }
+/* light falling across a turning box: the spine darkens as it turns away, the cover lights up as it turns to you */
+.tp-sp::after, .tp-cv::after { content: ""; position: absolute; inset: 0; background: #000; pointer-events: none; }
+.tp-sp::after { opacity: var(--ss, 0); }
+.tp-cv::after { opacity: var(--cs, .5); }
+/* spine: front of the box, the title running down it, the level badge on top, the designer at the foot */
+.tp-sp { left: calc(var(--ws) / -2); width: var(--ws); transform: translateZ(calc(var(--d) / 2)); cursor: pointer; color: #fff;
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--ws) * .3); padding: calc(var(--ws) * .3) 0 calc(var(--ws) * .32);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--sp) 60%, #000), var(--sp) 16%, color-mix(in srgb, var(--sp) 74%, #fff) 48%, var(--sp) 80%, color-mix(in srgb, var(--sp) 62%, #000)); }
+.tp-lv { flex: none; display: grid; place-items: center; width: calc(var(--ws) * .62); aspect-ratio: 1; border-radius: 50%; background: #fff; color: var(--sp); font: 700 calc(var(--ws) * .34)/1 var(--sans); font-style: normal; }
+/* the title gets all the room between the badge and the name; the script shrinks it until it fits */
+.tp-tw { flex: 1 1 auto; min-height: 0; width: 100%; display: grid; place-items: center; overflow: hidden; }
+.tp-t { display: block; writing-mode: vertical-rl; font-weight: 700; font-family: var(--sans); line-height: 1; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; text-shadow: 0 1px 1px rgba(0, 0, 0, .3); }
+.tp-by { flex: none; writing-mode: vertical-rl; white-space: nowrap; font: 600 calc(var(--ws) * .16)/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; opacity: .8; }
+/* cover: the right side of the box; it faces you when the box turns */
+.tp-cv { left: calc(var(--d) / -2); width: var(--d); transform: rotateY(90deg) translateZ(calc(var(--ws) / 2)); background: #fff; cursor: zoom-in;
+  box-shadow: 0 30px 60px -28px rgba(20, 16, 10, .55); }
+.tp-cv img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.tp-cv::before { content: ""; position: absolute; inset: 0 auto 0 0; z-index: 1; width: 4%; pointer-events: none;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .32), rgba(255, 255, 255, .2) 45%, transparent); }   /* the hinge next to the spine */
+/* back cover, the page edges behind, and the top (page edges too) */
+.tp-bk { left: calc(var(--d) / -2); width: var(--d); transform: rotateY(-90deg) translateZ(calc(var(--ws) / 2));
+  background: linear-gradient(120deg, color-mix(in srgb, var(--sp) 80%, #fff), var(--sp) 50%, color-mix(in srgb, var(--sp) 78%, #000)); }
+.tp-pg { left: calc(var(--ws) / -2); width: var(--ws); transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); border-radius: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .14), transparent 14%, transparent 86%, rgba(0, 0, 0, .14)), repeating-linear-gradient(90deg, #FCF9F3 0 1.5px, #E2D9CC 1.5px 2.5px); }
+.tp-tp { left: calc(var(--ws) / -2); width: var(--ws); top: calc(var(--d) / -2); height: var(--d); transform: rotateX(90deg) translateZ(calc(var(--H) / 2)); border-radius: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .14), transparent 14%, transparent 86%, rgba(0, 0, 0, .14)), repeating-linear-gradient(90deg, #FCF9F3 0 1.5px, #E2D9CC 1.5px 2.5px); }
+/* a flash-card box: white card all round, the colour only on its spine */
+.k-cards .tp-cv { border-radius: 4px; }
+.k-cards .tp-cv::before { display: none; }
+.k-cards .tp-bk { background: linear-gradient(120deg, #FFFFFF, #ECE6DE); }
+.k-cards .tp-pg, .k-cards .tp-tp { background: linear-gradient(90deg, #E6DFD5, #FBF8F4 50%, #E6DFD5); }
+/* play button on the open cover's lower left corner */
+.cs-play { position: absolute; left: 0; top: 0; z-index: 2; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%;
+  border: 1px solid var(--acc); color: var(--acc); background: rgba(247, 241, 232, .8); cursor: pointer; transform: translate(-50%, -50%) scale(0); }
+.cs-play svg { width: 13px; height: 13px; margin-left: 2px; }
+/* caption: each line slides through its own mask when the cover changes */
+.cs-cap { position: relative; display: grid; justify-items: center; gap: 10px; margin-top: .4rem; pointer-events: none; text-align: center; }
+.cs-mask { position: relative; display: grid; width: min(92vw, 760px); overflow: hidden; }
+.cs-mask > span { grid-area: 1 / 1; display: block; }
+.cs-ti { font: 400 clamp(1.7rem, 2.6vw, 2.4rem)/1.12 var(--serif); letter-spacing: -.01em; padding-bottom: .06em; }
+.cs-su { font: 600 .66rem/1.3 var(--sans); letter-spacing: .09em; text-transform: uppercase; color: var(--acc); }
+.cs-no { font: 500 .72rem/1.3 var(--sans); letter-spacing: .08em; color: var(--ink-2); }
+.cs-arrow { position: absolute; top: calc(var(--H) + 90px + 2.2rem); width: 48px; height: 48px; display: grid; place-items: center; border: 0; background: none; color: var(--ink); cursor: pointer; }
+.cs-arrow svg { width: 20px; height: 11px; transition: transform .4s var(--ease); }
+.cs-prev { left: max(20px, 4vw); } .cs-next { right: max(20px, 4vw); }
+.cs-prev:hover svg { transform: translateX(-4px); } .cs-next:hover svg { transform: translateX(4px); }
+/* printed-paper grain over the shelf and the caption */
+.cs-grain { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: .5; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .42 0 0 0 0 .38 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); }
+@media (max-width: 760px) {
+  .cs3 { --H: min(60vw, 40svh); }
+  .cs-tab, .cs-ind { height: 26px; } .cs-tab { padding: 0 8px; font-size: .58rem; }
+  .cs-ti { font-size: 1.5rem; }
+  .cs-arrow { top: calc(var(--H) + 90px + 1.6rem); } .cs-prev { left: 6px; } .cs-next { right: 6px; }
+}
+
+/* covers "trio": three books standing side by side, book 1 (landscape) in the middle.
+   Each book is a 3D box: cover (front), spine (left), page edges (right and top). */
+.book-trio { --h: clamp(200px, 26vw, 350px); position: relative; display: flex; justify-content: center; align-items: flex-start; gap: clamp(1.4rem, 4.5vw, 4.5rem);
+  padding: 3rem 0 .5rem; }
+/* each book gets its own camera, a little above it, so its top and sides show */
+.bk-wrap { --bh: var(--h); position: relative; margin: 0; display: flex; flex-direction: column; align-items: center; perspective: 1300px; perspective-origin: 50% -40%; }
+.bk-wrap.land { --bh: calc(var(--h) * .8); margin-top: calc(var(--h) * .2); }
+.trio .bkw1 { order: 2; } .trio .bkw2 { order: 1; } .trio .bkw3 { order: 3; }
+.bk-wrap::before { content: ""; position: absolute; left: -10%; right: -10%; top: calc(var(--bh) - 18px); height: 36px; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(41, 37, 34, .32), transparent); }
+/* A closed hardcover, built as a real box that can be turned all the way round (it never opens):
+   --t = whole thickness, --bd = board thickness, --ov = how far the boards stand out past the pages, --sp = spine colour.
+   Every face looks outwards and hides its back, so the box draws correctly from any side. */
+.book3d { --t: clamp(22px, 2.6vw, 34px); --bd: 3px; --ov: 5px; --pg: calc(var(--t) - 2 * var(--bd));
+  position: relative; display: block; height: var(--bh); aspect-ratio: var(--r); padding: 0; border: 0; background: none; cursor: grab; touch-action: pan-y;
+  transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .9s var(--ease), translate .5s var(--ease); }
+.book3d.turning { cursor: grabbing; transition: none; }
+.book-trio { -webkit-user-select: none; user-select: none; }
+.book3d:hover, .book3d:focus-visible { translate: 0 -10px; }
+.trio .bkw2 .book3d { --ry: -26deg; }
+.trio .bkw3 .book3d { --ry: 26deg; }
+.trio .bkw1 .book3d { --ry: -4deg; }
+.book3d > span { position: absolute; display: block; backface-visibility: hidden; }
+/* front board (the cover) with the hinge groove next to the spine */
+.bk-face { inset: 0; transform: translateZ(calc(var(--t) / 2)); border-radius: 2px 5px 5px 2px; overflow: hidden; box-shadow: 0 0 0 1px rgba(0, 0, 0, .07); }
+.bk-face img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.bk-face::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 7%; pointer-events: none;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .34), rgba(255, 255, 255, .1) 16%, rgba(0, 0, 0, .24) 30%, rgba(255, 255, 255, .26) 44%, rgba(0, 0, 0, .05) 70%, transparent); }
+/* back board */
+.bk-back { inset: 0; transform: rotateY(180deg) translateZ(calc(var(--t) / 2)); border-radius: 5px 2px 2px 5px;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--sp) 82%, #fff), var(--sp) 45%, color-mix(in srgb, var(--sp) 80%, #000)); }
+.bk-back::after { content: ""; position: absolute; inset: 0 0 0 auto; width: 7%;
+  background: linear-gradient(270deg, rgba(0, 0, 0, .3), rgba(255, 255, 255, .14) 40%, transparent); }
+/* the spine, rounded by its shading, with the title running down it */
+.bk-spine { top: 0; bottom: 0; left: calc(var(--t) / -2); width: var(--t); transform: rotateY(-90deg); border-radius: 4px; overflow: hidden;
+  display: grid !important; place-items: center;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--sp) 62%, #000), var(--sp) 18%, color-mix(in srgb, var(--sp) 72%, #fff) 50%, var(--sp) 82%, color-mix(in srgb, var(--sp) 62%, #000)); }
+.bk-spine b { writing-mode: vertical-rl; font: 700 clamp(.58rem, .9vw, .8rem)/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .35); white-space: nowrap; }
+/* the page block: set back from the boards on the fore-edge, top and bottom */
+.bk-pages { top: var(--ov); bottom: var(--ov); width: var(--pg); left: calc(100% - var(--ov) - var(--pg) / 2); transform: rotateY(90deg);
+  background: linear-gradient(90deg, rgba(0, 0, 0, .12), transparent 18%, transparent 82%, rgba(0, 0, 0, .12)),
+              repeating-linear-gradient(90deg, #FCF9F3 0 1.5px, #E4DCCF 1.5px 2.5px); }
+.bk-top, .bk-bottom { left: 2px; right: var(--ov); height: var(--pg);
+  background: linear-gradient(0deg, rgba(0, 0, 0, .1), transparent 20%, transparent 80%, rgba(0, 0, 0, .1)),
+              repeating-linear-gradient(0deg, #FCF9F3 0 1.5px, #E4DCCF 1.5px 2.5px); }
+.bk-top { top: calc(var(--ov) - var(--pg) / 2); transform: rotateX(90deg); }
+.bk-bottom { top: calc(100% - var(--ov) - var(--pg) / 2); transform: rotateX(-90deg); }
+/* the thickness of the two boards, seen from the side, the top and the bottom */
+.bk-edge { background: color-mix(in srgb, var(--sp) 70%, #000); }
+.e-fr, .e-br { top: 0; bottom: 0; width: var(--bd); left: calc(100% - var(--bd) / 2); }
+.e-fr { transform: translateZ(calc(var(--t) / 2 - var(--bd) / 2)) rotateY(90deg); }
+.e-br { transform: translateZ(calc(var(--bd) / 2 - var(--t) / 2)) rotateY(90deg); }
+.e-ft, .e-bt, .e-fb, .e-bb { left: 0; right: 0; height: var(--bd); }
+.e-ft, .e-bt { top: calc(var(--bd) / -2); }
+.e-fb, .e-bb { top: calc(100% - var(--bd) / 2); }
+.e-ft { transform: translateZ(calc(var(--t) / 2 - var(--bd) / 2)) rotateX(90deg); }
+.e-bt { transform: translateZ(calc(var(--bd) / 2 - var(--t) / 2)) rotateX(90deg); }
+.e-fb { transform: translateZ(calc(var(--t) / 2 - var(--bd) / 2)) rotateX(-90deg); }
+.e-bb { transform: translateZ(calc(var(--bd) / 2 - var(--t) / 2)) rotateX(-90deg); }
+.bk-wrap figcaption { display: flex; align-items: baseline; gap: .55rem; margin-top: 1.7rem; font: 500 clamp(1.1rem, 1.6vw, 1.35rem)/1.2 var(--serif); }
+.bk-no { font: italic 500 .95rem/1 var(--serif); color: var(--acc); }
+@media (max-width: 760px) {
+  .book-trio { --h: 40vw; flex-wrap: wrap; gap: 2.2rem 1.6rem; padding-top: 2rem; }
+  .trio .bkw1 { order: 0; flex-basis: 100%; }
+  .trio .bk-wrap.land { --bh: 50vw; margin-top: 0; }
+  .trio .bkw2 .book3d { --ry: -16deg; }
+  .trio .bkw3 .book3d { --ry: 16deg; }
+}
+/* "pair": a flash-card box (landscape) and a book (portrait), turned towards each other */
+.book-trio.pair { --h: clamp(220px, 30vw, 400px); gap: clamp(2rem, 7vw, 7rem); }
+.pair .bkw1 .book3d { --ry: -20deg; }
+.pair .bkw2 .book3d { --ry: 20deg; }
+/* "row": four or more side by side, fanned towards the middle (the angles come from the page) */
+.book-trio.row { --h: clamp(160px, 20vw, 290px); gap: clamp(1.2rem, 3.6vw, 3.4rem); }
+@media (max-width: 760px) { .book-trio.row { --h: 36vw; gap: 2.2rem 1.6rem; } }
+/* a flash-card box: deeper, square sides in white card (no boards, no page block), the coloured spine, a lid line on top */
+.k-cards .book3d { --t: clamp(34px, 4vw, 54px); --bd: 0px; --ov: 0px; }
+.k-cards .bk-face { border-radius: 6px; }
+.k-cards .bk-face::after, .k-cards .bk-edge, .k-cards .bk-back::after { display: none; }
+.k-cards .bk-back { border-radius: 6px; background: linear-gradient(120deg, #FFFFFF, #EFE9E1); }
+.k-cards .bk-spine { border-radius: 3px; background: linear-gradient(90deg, color-mix(in srgb, var(--sp) 80%, #000), var(--sp) 30%, color-mix(in srgb, var(--sp) 85%, #fff) 60%, var(--sp)); }
+.k-cards .bk-pages { left: calc(100% - var(--t) / 2); width: var(--t); top: 0; bottom: 0; border-radius: 3px;
+  background: linear-gradient(90deg, #E4DDD3, #FBF8F4 45%, #E8E1D7); }
+.k-cards .bk-top, .k-cards .bk-bottom { left: 0; right: 0; height: var(--t); border-radius: 3px; }
+.k-cards .bk-top { top: calc(var(--t) / -2); background: linear-gradient(0deg, #F1ECE5, #FFFFFF 50%, #EDE7DF); }
+.k-cards .bk-top::after { content: ""; position: absolute; left: 0; right: 0; top: 38%; height: 1px; background: rgba(0, 0, 0, .14); }   /* the lid */
+.k-cards .bk-bottom { top: calc(100% - var(--t) / 2); background: #E9E2D8; }
+@media (max-width: 760px) {
+  .book-trio.pair { --h: 38vw; flex-wrap: nowrap; gap: 1.4rem; }
+  .pair .bkw1 .book3d { --ry: -14deg; }
+  .pair .bkw2 .book3d { --ry: 14deg; }
+}
+/* home door for the pair: the card box in front on the left, the book standing behind on the right */
+.cv-covers.cv-pair .cv-cov.cc0 { z-index: 2; height: 40%; transform: translateX(-92%) rotate(-4deg); }
+.cv-covers.cv-pair .cv-cov.cc1 { z-index: 1; height: 62%; transform: translateX(-6%) rotate(3deg); }
+.door:hover .cv-covers.cv-pair .cv-cov.cc0 { transform: translateX(-102%) translateY(-5%) rotate(-7deg); }
+.door:hover .cv-covers.cv-pair .cv-cov.cc1 { transform: translateX(2%) translateY(-5%) rotate(6deg); }
+/* home door for the trio: book 1 in front, books 2 and 3 standing behind it */
+.cv-covers.cv-trio .cv-cov.is-book { height: 50%; }
+.cv-covers.cv-trio .cv-cov.is-book.land { height: 40%; }
+.cv-covers.cv-trio .cv-cov.cc0 { transform: translateX(-132%) rotate(-5deg); }
+.cv-covers.cv-trio .cv-cov.cc1 { z-index: 2; transform: translateX(-50%); }
+.cv-covers.cv-trio .cv-cov.cc2 { transform: translateX(32%) rotate(5deg); }
+.door:hover .cv-covers.cv-trio .cv-cov.cc0 { transform: translateX(-146%) translateY(-4%) rotate(-8deg); }
+.door:hover .cv-covers.cv-trio .cv-cov.cc1 { transform: translateX(-50%) translateY(-5%) scale(1.04); }
+.door:hover .cv-covers.cv-trio .cv-cov.cc2 { transform: translateX(46%) translateY(-4%) rotate(8deg); }
+
+/* a picture holding several covers: shown flat, like a print */
+.sh-big.is-set .sh-obj img { border-radius: 6px; box-shadow: 0 0 0 10px #fff, 0 50px 70px -34px rgba(41, 37, 34, .6); }
+.shelf.solo .sh-stage { height: clamp(380px, 80vh, 900px); }
+.shelf.solo .sh-bar { justify-content: center; text-align: center; }
+.shelf.solo .sh-cap { justify-content: center; }
+.sh-bar { display: flex; justify-content: space-between; align-items: center; gap: 1.2rem 2rem; flex-wrap: wrap; }
+.sh-cap { display: flex; align-items: baseline; gap: .4rem 1.1rem; flex-wrap: wrap; }
+.sh-no { font: italic 500 1.15rem/1 var(--serif); color: var(--acc); }
+.sh-title { font: 500 clamp(1.6rem, 3vw, 2.3rem)/1.25 var(--serif); }
+.sh-note { font: 600 .7rem/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+.sh-ctrl { display: flex; gap: .6rem; }
+/* the shelf: every cover stands on one plank that scrolls with them on small screens */
+.sh-rail { display: flex; align-items: flex-end; gap: clamp(.8rem, 2.2vw, 1.8rem); margin-top: 2rem; padding: 24px 1.2rem 18px; overflow-x: auto; scrollbar-width: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 34%, #fff) 0 30%, color-mix(in srgb, var(--acc) 64%, #1C1418)) bottom / 100% 16px no-repeat local; }
+.sh-rail::-webkit-scrollbar { display: none; }
+.sh-item:first-child { margin-left: auto; }
+.sh-item:last-child { margin-right: auto; }
+.sh-item { position: relative; flex: none; height: clamp(72px, 10vw, 118px); aspect-ratio: var(--r); padding: 0; border: 0; overflow: hidden; background: #fff; cursor: pointer;
+  transform-origin: bottom center; filter: saturate(.85) brightness(.96); box-shadow: 0 12px 14px -10px rgba(41, 37, 34, .55);
+  transition: transform .5s var(--ease), box-shadow .5s var(--ease), filter .4s; }
+.sh-item img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sh-item.is-card { border-radius: 6px; }
+.sh-item.is-book { border-radius: 2px 4px 4px 2px; }
+.sh-item.is-book::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 8%; background: linear-gradient(90deg, rgba(0, 0, 0, .28), rgba(255, 255, 255, .2) 50%, transparent); }
+.sh-item:hover { transform: translateY(-6px); filter: none; }
+.sh-item[aria-selected="true"] { transform: translateY(-14px); filter: none; box-shadow: 0 22px 24px -12px rgba(41, 37, 34, .55), 0 0 0 3px var(--ivory), 0 0 0 5px var(--acc); }
+
+/* covers home door: two flash-card boxes leaning on a standing book */
+.cv-covers { background: radial-gradient(110% 90% at 50% 25%, color-mix(in srgb, var(--acc) 10%, var(--ivory)), color-mix(in srgb, var(--acc) 26%, var(--ivory-2))); }
+.cv-cov { position: absolute; left: 50%; bottom: 17%; aspect-ratio: var(--r); overflow: hidden; box-shadow: 0 26px 34px -20px rgba(41, 37, 34, .55); transition: transform 1s var(--ease); }
+.cv-cov img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cv-cov.is-card { height: 36%; border-radius: 7px; }
+.cv-cov.is-book { height: 62%; border-radius: 2px 5px 5px 2px; }
+.cv-cov.is-book::before { content: ""; position: absolute; inset: 0 auto 0 0; z-index: 1; width: 7%; background: linear-gradient(90deg, rgba(0, 0, 0, .28), rgba(255, 255, 255, .18) 45%, transparent); }
+.cv-cov.cc0 { transform: translateX(-104%) rotate(-6deg); }
+.cv-cov.cc1 { z-index: 2; transform: translateX(-50%); }
+.cv-cov.cc2 { transform: translateX(4%) rotate(6deg); }
+.door:hover .cv-cov.cc0 { transform: translateX(-114%) translateY(-5%) rotate(-9deg); }
+.door:hover .cv-cov.cc1 { transform: translateX(-50%) translateY(-5%) scale(1.03); }
+.door:hover .cv-cov.cc2 { transform: translateX(14%) translateY(-5%) rotate(9deg); }
+.cv-cov.is-set { height: 74%; border-radius: 4px; box-shadow: 0 0 0 5px #fff, 0 30px 40px -20px rgba(41, 37, 34, .55); }
+.cv-covers.solo .cv-cov.cc0 { z-index: 2; transform: translateX(-50%) rotate(-2deg); }
+.door:hover .cv-covers.solo .cv-cov.cc0 { transform: translateX(-50%) translateY(-4%) rotate(0deg) scale(1.03); }
+.cv-ledge { position: absolute; left: 10%; right: 10%; bottom: 13%; height: 4%; border-radius: 3px; box-shadow: 0 14px 18px -10px rgba(41, 37, 34, .45);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 38%, #fff), color-mix(in srgb, var(--acc) 66%, #1C1418)); }
+
 /* ---------- kufi print: framed prints on a cross-stitch wall ---------- */
 .kufi-wall { background-color: color-mix(in srgb, var(--acc) 6%, var(--ivory));
   background-image: repeating-conic-gradient(color-mix(in srgb, var(--acc) 7%, transparent) 0 25%, transparent 0 50%);

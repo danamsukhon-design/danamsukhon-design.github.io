@@ -426,7 +426,57 @@ window.SITE = {
       ],
     },
 
-    /* ---------------- 08 POSTERS ---------------- */
+    /* ---------------- 08 COVERS ----------------
+       Dana, 2026-11-25: "بس هاد وشيل الباقي" - only the three phonics covers she sent in one picture
+       (dana/covers-original/phonics-series.jpg), then "خد صورة صورة ... اعمل ستايل انه تلات كتب":
+       each cover cut out on its own and shown as three standing books (layout "trio").
+       The six flash-card / phonics covers sent before (book names taken off) are kept aside in
+       dana/covers-edited (tool: dana/tools/cover-edit).
+       kind: "cards" = a flash-card box (landscape), "book" = a book cover, "set" = several covers in one picture.
+       layout "shelf" = one cover in front + a shelf to pick from; "trio" = three books standing side by side
+       (book 1 in the middle); "pair" = two covers standing side by side.
+       Latest (Dana, 2026-11-25): "امسح الكفرات الي قبل و حط بدالهم خدول واحد بالطول وواحد بالعرض" -
+       only a landscape flash-card cover (shown as a card box) and a portrait phonics book.
+       Then "خلي تغليفته متل كتاب حقيقي و انها لما الفه يبين في صفحات بس ما تفتح": both are closed 3D objects you
+       drag to turn all the way round (spine with the title, page block, back) - they never open.
+       spine = the colour of the spine (taken from the cover). */
+    {
+      id: "covers", title: "Book Covers", unit: "covers", icon: "book", acc: "#6B4F8C",   // Dana: "book cover section not cover"
+      kicker: "Flash cards & phonics books",
+      short: "Covers for children’s flash cards and phonics books.",
+      lead: "Covers made to stand out on a shelf and speak to children at a glance: bright characters, a bold title and a clear level on each one.",
+      /* 2026-11-25, "add these": two more phonics covers, so the page is a row of four ("row" layout) */
+      cover: ["covers/phonics-pets-1.jpg", "covers/flash-cards-level-1.jpg", "covers/phonics-book-1.jpg"],
+      /* layout "vhs" (Dana sent a VHS-shelf reference, "like this"): the covers stand on a shelf spine out; the one in
+         the middle is pulled out and turned to show its cover. Click it and a sheet of paper grows out of it into a
+         detail page where the cover bleeds in like ink. Not endless: with four covers that would repeat them.
+         desc = a longer description (kept, not shown now); level = the number in the spine's badge;
+         spineTitle = the short text down the spine (the level is already in the badge; Dana: "عدل كتابتهم من هون"). */
+      sets: [
+        { title: "The Covers", layout: "vhs",
+          desc: "A box of flash cards and three phonics books on one shelf. Pick one to bring it out, then click its cover to open it.",
+          items: [
+            { src: "covers/flash-cards-level-1.jpg", kind: "cards", title: "Flash Cards · Level 1", spineTitle: "Flash Cards", note: "Card box", spine: "#D12A2F", level: 1,
+              desc: "A box of English flash cards for young learners. A boy waving from a yellow car sets the mood, with a bold title and a clear level badge that a child can find on the shelf.",
+              alt: "Flash-card cover: a waving boy driving a yellow car" },
+            { src: "covers/phonics-book-1.jpg", kind: "book", title: "Phonics 1 · Farm", spineTitle: "Phonics · Farm", note: "Book cover", spine: "#6A2CC4", level: 1,
+              desc: "The first book of a phonics course. A cat in glasses leads a farm band past a red barn, and the first letters of the alphabet float in their music.",
+              alt: "Phonics 1 cover: a waving cat in glasses leads a band of farm animals past a red barn, with the letters A, B and C" },
+            { src: "covers/phonics-pets-1.jpg", kind: "book", title: "Phonics 1 · Pets", spineTitle: "Phonics · Pets", note: "Book cover", spine: "#2F6FE4", level: 1,
+              desc: "A phonics book where reading feels like magic: the cat opens a glowing book while its friends gather round with magnifying glasses.",
+              alt: "Phonics 1 cover: a cat in glasses reads a glowing purple book while farm friends look on with magnifying glasses" },
+            { src: "covers/phonics-pets-2.jpg", kind: "book", title: "Phonics 2 · Pets", spineTitle: "Phonics · Pets", note: "Book cover", spine: "#8B3FD9", level: 2,
+              desc: "Book two of the same series. The friends go hunting for sounds in the grass, magnifying glasses in hand.",
+              alt: "Phonics 2 cover: farm animals search the grass with magnifying glasses" },
+            /* 2026-11-25, "ضيفها" */
+            { src: "covers/phonics-treehouse-1.jpg", kind: "book", title: "Phonics 1 · Tree House", spineTitle: "Phonics · Tree House", note: "Book cover", spine: "#B5662B", level: 1,
+              desc: "A second cover idea for book one: the friends turn a tree house into a classroom, with numbers carved into the trunk and a lesson on the board.",
+              alt: "Phonics 1 cover: farm friends learn and play in a tree house, with numbers carved into the trunk" },
+          ] },
+      ],
+    },
+
+    /* ---------------- 09 POSTERS ---------------- */
     {
       id: "posters", title: "Posters", unit: "posters", icon: "image", acc: "#3F7A8C",
       kicker: "Classroom & cultural posters",
