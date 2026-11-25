@@ -30,7 +30,7 @@ window.SITE = {
   contact: {
     email: "danamsukhon@gmail.com",
     behance: "https://www.behance.net/danasukhon",
-    linkedin: "",            // paste Dana's LinkedIn profile URL here (the PDF only had a search link)
+    linkedin: "https://www.linkedin.com/in/dana-sukhon-99a9282a2/",
     phone: "+962778945414",
     phoneLabel: "0778 945 414",
     showPhone: true,
